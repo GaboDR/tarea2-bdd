@@ -17,7 +17,7 @@ session_start();
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
-    <a class="navbar-brand" href="dashboard.php">PHP MySQL CRUD</a>
+    <a class="navbar-brand" href="/tarea2/php/dashboard.php">PHP MySQL CRUD</a>
 
     <?php if (isset($_SESSION['autor_id']) || isset($_SESSION['revisor_id']) || isset($_SESSION['jefe_comite_id'])): ?>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" 
