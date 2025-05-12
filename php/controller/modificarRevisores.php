@@ -3,6 +3,8 @@ include('../db.php');
 session_start();
 
 if (isset($_POST['btnchangedata'])){
+    echo var_dump($_POST);
+    exit;
     $nombre = $_POST['name'];
     $rut = $_POST['rut'];
     $email = $_POST['email'];
@@ -60,6 +62,8 @@ if (isset($_POST['btnchangedata'])){
         exit;
     }
 } else {
+    echo var_dump($_POST);
+    exit;
     // Si no es un formulario válido, mostrar un mensaje de error
     $_SESSION['error'] = "Formulario no válido";
     header("Location: ../jefeRevisor/gestion_revisores.php");

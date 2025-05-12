@@ -31,6 +31,7 @@ $result_topicos = $conexion->query($query_topicos);
 // Si hay un término de búsqueda, hacer una consulta con LIKE
 if (!empty($buscar)) {
     $query = "SELECT
+    id,
 	nombre,
     rut,
     email,
@@ -164,7 +165,10 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                                         data-id="<?= htmlspecialchars($revisor['id']) ?>">
                                         Modificar datos
                                         </button>
-                                        <button type="button" class="btn btn-danger bossAction">Eliminar revisor</button>
+                                        <button type="button" class="btn btn-danger bossAction"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target='#deleteModal'
+                                        data-id="<?= htmlspecialchars($revisor['id']) ?>">Eliminar revisor</button>
                                     </div>
                                 </td>
                             </tr>
@@ -175,6 +179,7 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                 </tbody>
             </table>
 
+            <!-- Modal modificar datos -->
             <div class="modal fade" id="modifierModal" tabindex="-1" aria-labelledby="modifierModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -220,6 +225,28 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                             </div>
                             <div class="modal-footer">
                                 <button type="submit" class="btn btn-primary" name="btnchangedata">Guardar cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal borrar registro -->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="deleteModalLabel">Eliminar revisor</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="../controller/eliminar_revisor.php" method="post">
+                            <div class="modal-body">
+                                <input type="hidden" name="id" id="inputDeleteID">
+                                <h3>¿Estas seguro de eliminar este revisor?</h3>
+                                <h5>Esta acción no puede revertirse</h5>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-danger" name="btndelete">Eliminar</button>
                             </div>
                         </form>
                     </div>
@@ -287,6 +314,13 @@ document.getElementById('modifierModal').addEventListener('show.bs.modal', funct
             errorElement.remove();
         }
     }
+});
+
+document.getElementById('deleteModal').addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+    var id = button.getAttribute('data-id');
+    
+    document.getElementById('inputDeleteID').value = id;
 });
 
 document.getElementById('formRevisor').addEventListener('submit', function(e) {
