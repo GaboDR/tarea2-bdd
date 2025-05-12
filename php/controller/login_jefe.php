@@ -29,7 +29,7 @@ try {
             $_SESSION['jefe_id'] = $usuario['id'];
             $_SESSION['jefe_nombre'] = $usuario['nombre'];
 
-            header("Location: ../autor/dashboard.php"); // o donde quieras redirigir
+            header("Location: ../jefeRevisor/mainJefe.php"); // o donde quieras redirigir
             exit;
         } else {
             header("Location: ../login/login_jefe.php?error=contrasena_incorrecta");
