@@ -17,7 +17,9 @@ session_start();
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
-    <a class="navbar-brand" href="/tarea2/php/dashboard.php">PHP MySQL CRUD</a>
+    <a class="navbar-brand" href="/tarea2/php/dashboard.php">
+      <img src="../../img/finalInvert.svg" style="width: 35px; height: auto;" alt="Logo GESCON">
+    </a>
 
 
     <?php if (isset($_SESSION['autor_id']) || isset($_SESSION['revisor_id']) || isset($_SESSION['jefe_id'])): ?>

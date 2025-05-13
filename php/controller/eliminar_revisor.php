@@ -7,24 +7,31 @@ if (isset($_POST['btndelete'])){
 
     $conexion->begin_transaction();
     try{
-        $deleteQueryAgregada = "DELETE FROM especialidad_agregada WHERE ID_REVISOR = ?";
-        $deleteStmt = $conexion->prepare($deleteQueryAgregada);
-        $deleteStmt->bind_param("i", $id);
-        $deleteStmt->execute();
+        $ArticuloRevisorQuery = "SELECT * FROM articulo_revisor WHERE ID_REVISOR = ?";
+        $ArticuloRevisorStmt = $conexion->prepare($ArticuloRevisorQuery);
+        $ArticuloRevisorStmt->bind_param("i", $id);
+        $ArticuloRevisorStmt->execute();
+        $result = $ArticuloRevisorStmt->get_result();
 
-        $deleteArticuloRevisorQuery = "DELETE FROM articulo_revisor WHERE ID_REVISOR = ?";
-        $deleteArticuloRevisorStmt = $conexion->prepare($deleteArticuloRevisorQuery);
-        $deleteArticuloRevisorStmt->bind_param("i", $id);
-        $deleteArticuloRevisorStmt->execute();
+        if ($result->num_rows == 0){
+            $deleteQueryAgregada = "DELETE FROM especialidad_agregada WHERE ID_REVISOR = ?";
+            $deleteStmt = $conexion->prepare($deleteQueryAgregada);
+            $deleteStmt->bind_param("i", $id);
+            $deleteStmt->execute();
+    
+            $deleteQueryRevisor = "DELETE FROM revisor WHERE ID = ?";
+            $deleteRevisorStmt = $conexion->prepare($deleteQueryRevisor);
+            $deleteRevisorStmt->bind_param('i', $id);
+            $deleteRevisorStmt->execute();
 
-        $deleteQueryRevisor = "DELETE FROM revisor WHERE ID = ?";
-        $deleteRevisorStmt = $conexion->prepare($deleteQueryRevisor);
-        $deleteRevisorStmt->bind_param('i', $id);
-        $deleteRevisorStmt->execute();
+            $_SESSION['mensaje'] = "Revisor eliminado correctamente.";
+            $_SESSION['correo'] = "Se ha enviado una notificación mediante correo electrónico al revisor eliminado.";
+        } else {
+            $_SESSION['mensaje'] = "El revisor seleccionado no puede ser eliminado ya posee una revision pendiente.";
+        }
 
         $conexion->commit();
 
-        $_SESSION['mensaje'] = "Revisor eliminado correctamente";
         header("Location: ../jefeRevisor/gestion_revisores.php");
         exit;
     } catch (Exception $e){

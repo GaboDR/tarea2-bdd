@@ -3,8 +3,6 @@ include('../db.php');
 session_start();
 
 if (isset($_POST['btnchangedata'])){
-    echo var_dump($_POST);
-    exit;
     $nombre = $_POST['name'];
     $rut = $_POST['rut'];
     $email = $_POST['email'];

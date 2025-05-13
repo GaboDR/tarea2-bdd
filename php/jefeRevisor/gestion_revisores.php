@@ -117,23 +117,26 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
     </div>
 
     <?php if (isset($_SESSION['mensaje'])): ?>
-    <div class="alert alert-success">
+    <div class="alert alert-success show">
         <?= $_SESSION['mensaje']; ?>
     </div>
     <?php unset($_SESSION['mensaje']); ?>
     <?php endif; ?>
 
     <?php if (isset($_SESSION['error'])): ?>
-    <div class="alert alert-danger">
+    <div class="alert alert-danger show">
         <?= $_SESSION['error']; ?>
     </div>
-    <?php unset($_SESSION['error']); ?>
+    <?php unset($_SESSION['error']); ?> 
     <?php endif; ?>
 
     <!-- Dashboard de artículos -->
     <div class="row">
         <div class="col-md-12">
-            <h2>Revisores registrados</h2>
+            <div class="d-flex containerTitleAndButton align-items-center">
+                <h2 class="me-auto">Revisores registrados</h2>
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#appendModal">Agregar revisor</button>
+            </div>
             <!-- Tabla de artículos -->
             <table class="table table-bordered table-striped">
                 <thead class="thead-dark">
@@ -174,7 +177,7 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan='5' class='text-center'>No se encontraron artículos.</td></tr>
+                        <tr><td colspan='5' class='text-center'>No se encontraron revisores.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -191,16 +194,16 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                             <div class="modal-body">
                                 <div class="mb-3">
                                     <label for="inputName" class="form-label">Nombre</label>
-                                    <input type="text" name="name" id="inputName" class="form-control">
+                                    <input type="text" name="name" id="inputName" class="form-control" required>
                                     <input type="hidden" name="id" id="inputID">
                                 </div>
                                 <div class="mb-3">
                                     <label for="inputRut" class="form-label">Rut</label>
-                                    <input type="rut" id="inputRut" class="form-control" name="rut">
+                                    <input type="text" id="inputRut" class="form-control" name="rut" maxlength="10" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="inputEmail" class="form-label">E-mail</label>
-                                    <input type="email" class="form-control" id="inputEmail" name="email" value="<?php echo isset($_POST["email"]) ? htmlspecialchars($_POST["email"]) : ''; ?>">
+                                    <input type="email" class="form-control" id="inputEmail" name="email" value="<?php echo isset($_POST["email"]) ? htmlspecialchars($_POST["email"]) : ''; ?>" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Tópicos</label>
@@ -253,6 +256,55 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                 </div>
             </div>
 
+            <!-- Modal agregar revisor -->
+            <div class="modal fade" id="appendModal" tabindex="-1" aria-labelledby="appendModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="appendModalLabel">Agregar revisor</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="formAppend" action="../controller/agregar_revisor.php" method="post">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="inputRut" class="form-label">Rut</label>
+                                    <input type="text" id="inputRutAppend" class="form-control" name="rut" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="inputName" class="form-label">Nombre</label>
+                                    <input type="text" id="inputNameAppend" class="form-control" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="inputEmail" class="form-label">Email</label>
+                                    <input type="email" id="inputEmailAppend" class="form-control" name="email" required>
+                                </div>
+                                <label class="form-label">Tópicos</label>
+                                    <div class="especialidadesContainer" id="especialidadesContainerAppend">
+                                        <?php
+                                        $result_topicos->data_seek(0);
+                                        while ($row_topico = $result_topicos->fetch_assoc()):
+                                            $nombreTopico = htmlspecialchars($row_topico['nombre']);
+                                        ?>
+                                            <div class="form-check">
+                                                <input type="checkbox" name="topicos[]" 
+                                                id="topicoAppend<?= $nombreTopico ?>"
+                                                value="<?= $nombreTopico ?>"
+                                                class="form-check-input">
+                                                <label for="topicoAppend<?= $nombreTopico ?>" class="form-check-label">
+                                                    <?= $nombreTopico ?>
+                                                </label>
+                                            </div>
+                                        <?php endwhile; ?>
+                                    </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary" name="btnappend">Agregar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- Paginación -->
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
@@ -278,7 +330,88 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
     </div>
 </div>
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <img src="tarea2/img/GESCONiconoNEGROmini.svg" class="rounded me-2" style="width: 20px; height: auto;" alt="Logo GESCON">
+            <strong class="me-auto">GESCON</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            <?= isset($_SESSION['correo']) ? $_SESSION['correo'] : '' ?>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+<?php if (isset($_SESSION['correo'])): ?>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    var toastEl = document.getElementById('liveToast');
+    if (toastEl) {
+        var toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+});
+</script>
+<?php unset($_SESSION['correo']); endif;?>
+<script>
+    // Espera a que el DOM esté cargado
+    document.addEventListener('DOMContentLoaded', function () {
+        // Selecciona todas las alertas de Bootstrap
+        const alerts = document.querySelectorAll('.alert');
+
+        // Recorre cada alerta
+        alerts.forEach(function (alert) {
+            // Espera 3 segundos (3000 ms) y luego oculta la alerta
+            setTimeout(function () {
+                // Usa una animación de desvanecimiento si quieres
+                alert.classList.add('fade');
+                alert.classList.remove('show');
+
+                // Luego de un momento más, la quita del DOM completamente
+                setTimeout(function () {
+                    alert.remove();
+                }, 500); // tiempo extra para que termine la animación
+            }, 4000); // Tiempo que permanece visible
+        });
+    });
+
+    
+    document.getElementById('formRevisor').addEventListener('submit', function(e) {
+        const especialidadesContainer = document.getElementById('especialidadesContainer');
+        const checkboxes = especialidadesContainer.querySelectorAll('input[name="topicos[]"]:checked');
+        let errorElement = document.getElementById('especialidadesError')
+        
+        if(checkboxes.length === 0) {
+            e.preventDefault();
+            
+            // Configurar mensaje de error si no existe
+            if(!errorElement) {
+                errorElement = document.createElement('div');
+                errorElement.id = 'especialidadesError';
+                errorElement.className = 'text-danger mt-2';
+                errorElement.textContent = 'Debes seleccionar al menos una especialidad';
+                especialidadesContainer.parentNode.insertBefore(errorElement, especialidadesContainer.nextSibling);
+            }
+            
+            // Estilo de error
+            especialidadesContainer.classList.add('border', 'border-danger', 'p-2', 'rounded');
+            
+            // Enfocar el contenedor de especialidades
+            especialidadesContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            return false;
+        }
+        
+        especialidadesContainer.classList.remove('border', 'border-danger', 'p-2', 'rounded');
+        if (errorElement){
+            errorElement.remove();
+        }
+        
+        return true;
+    });
+    
 document.getElementById('modifierModal').addEventListener('show.bs.modal', function (event) {
     var button = event.relatedTarget;
     var rut = button.getAttribute('data-rut');
@@ -315,7 +448,6 @@ document.getElementById('modifierModal').addEventListener('show.bs.modal', funct
         }
     }
 });
-
 document.getElementById('deleteModal').addEventListener('show.bs.modal', function (event) {
     var button = event.relatedTarget;
     var id = button.getAttribute('data-id');
@@ -323,18 +455,18 @@ document.getElementById('deleteModal').addEventListener('show.bs.modal', functio
     document.getElementById('inputDeleteID').value = id;
 });
 
-document.getElementById('formRevisor').addEventListener('submit', function(e) {
-    const especialidadesContainer = document.getElementById('especialidadesContainer');
-    const checkboxes = document.querySelectorAll('input[name="topicos[]"]:checked');
-    const errorElement = document.getElementById('especialidadesError') || 
-                        document.createElement('div');
+document.getElementById('formAppend').addEventListener('submit', function(e) {
+    const especialidadesContainer = document.getElementById('especialidadesContainerAppend');
+    const checkboxes = especialidadesContainer.querySelectorAll('input[name="topicos[]"]:checked');
+    let errorElement = document.getElementById('especialidadesErrorAppend');
     
     if(checkboxes.length === 0) {
         e.preventDefault();
         
         // Configurar mensaje de error si no existe
-        if(!document.getElementById('especialidadesError')) {
-            errorElement.id = 'especialidadesError';
+        if(!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.id = 'especialidadesErrorAppend';
             errorElement.className = 'text-danger mt-2';
             errorElement.textContent = 'Debes seleccionar al menos una especialidad';
             especialidadesContainer.parentNode.insertBefore(errorElement, especialidadesContainer.nextSibling);
@@ -348,7 +480,31 @@ document.getElementById('formRevisor').addEventListener('submit', function(e) {
         
         return false;
     }
+
+    especialidadesContainer.classList.remove('border', 'border-danger', 'p-2', 'rounded');
+    if (errorElement){
+        errorElement.remove();
+    }
+
     return true;
 });
+
+document.getElementById('appendModal').addEventListener('show.bs.modal', function() {
+    const especialidadesContainer = document.getElementById('especialidadesContainerAppend');
+    const errorElement = document.getElementById('especialidadesErrorAppend');
+    
+    // Limpiar errores visuales
+    especialidadesContainer.classList.remove('border', 'border-danger', 'p-2', 'rounded');
+    
+    // Eliminar mensaje de error si existe
+    if(errorElement) {
+        errorElement.remove();
+    }
+    
+    // Opcional: Desmarcar todos los checkboxes al abrir el modal
+    const checkboxes = especialidadesContainer.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+});
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
