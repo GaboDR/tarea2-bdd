@@ -13,7 +13,7 @@ try {
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
     // Buscar al autor por su email
-    $stmt = $conexion->prepare("SELECT id, nombre, email, contrasena FROM JEFE_COMITE WHERE email = ?");
+    $stmt = $conexion->prepare("SELECT revisor.rut, nombre, email, contrasena FROM revisor LEFT JOIN jefe_comite ON jefe_comite.rut = revisor.rut WHERE revisor.email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
 
@@ -26,7 +26,7 @@ try {
         if (password_verify($contrasena, $usuario['contrasena'])) {
             // Iniciar sesión
             session_start();
-            $_SESSION['jefe_id'] = $usuario['id'];
+            $_SESSION['jefe_rut'] = $usuario['rut'];
             $_SESSION['jefe_nombre'] = $usuario['nombre'];
 
             header("Location: ../jefeRevisor/mainJefe.php"); // o donde quieras redirigir

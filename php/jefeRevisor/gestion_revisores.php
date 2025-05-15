@@ -10,7 +10,7 @@
 include('../includes/header.php'); 
 include('../db.php');
 
-if (!isset($_SESSION['jefe_id'])){
+if (!isset($_SESSION['jefe_rut'])){
     header("Location: ../login/login_jefe.php");
     exit;
 }
@@ -268,7 +268,7 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                             <div class="modal-body">
                                 <div class="mb-3">
                                     <label for="inputRut" class="form-label">Rut</label>
-                                    <input type="text" id="inputRutAppend" class="form-control" name="rut" required>
+                                    <input type="text" id="inputRutAppend" class="form-control" name="rut" maxlength="10" placeholder="12345678-9" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="inputName" class="form-label">Nombre</label>
@@ -333,7 +333,7 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
-            <img src="tarea2/img/GESCONiconoNEGROmini.svg" class="rounded me-2" style="width: 20px; height: auto;" alt="Logo GESCON">
+            <img src="../../img/GESCONnegro.png" class="rounded me-2" style="width: 20px; height: auto;" alt="Logo GESCON">
             <strong class="me-auto">GESCON</strong>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>

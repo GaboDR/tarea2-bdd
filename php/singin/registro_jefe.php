@@ -1,5 +1,9 @@
 <?php include('../includes/header.php'); 
 include('../db.php');
+
+// Consulta de tópicos
+$query = "SELECT nombre FROM topico_especialidad";
+$result = mysqli_query($conexion, $query);
 ?>
 
 <div class="container mt-5">
@@ -19,6 +23,9 @@ include('../db.php');
                 break;
             case 'acesso_invalido':
                 echo 'Permiso de clave rechazado.';
+                break;
+            case 'sin_topicos':
+                echo 'Debes seleccionar al menos un tópico de especialidad.';
                 break;
             default:
                 echo 'Ocurrió un error desconocido.';
@@ -56,6 +63,20 @@ include('../db.php');
             <label for="password" class="form-label">Clave de acceso</label>
             <input type="password" class="form-control" id="clave" name="clave" required>
             <div class="invalid-feedback">Ingresa una contraseña válida.</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tópicos de especialidad</label>
+            <div class="form-check">
+                <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="topicos[]" value="<?= $row['nombre']; ?>" id="topico<?= $row['nombre']; ?>">
+                        <label class="form-check-label" for="topico<?= $row['nombre']; ?>">
+                            <?= htmlspecialchars($row['nombre']); ?>
+                        </label>
+                    </div>
+                <?php } ?>
+            </div>
         </div>
 
         <div class="d-grid">

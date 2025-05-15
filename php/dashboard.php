@@ -1,6 +1,6 @@
 <?php 
 include('includes/header.php'); 
-if (!isset($_SESSION['autor_id']) && !isset($_SESSION['revisor_id']) && !isset($_SESSION['jefe_id'])) {
+if (!isset($_SESSION['autor_id']) && !isset($_SESSION['revisor_id']) && !isset($_SESSION['jefe_rut'])) {
     header('Location: sesiones.php'); // Redirigir al login si no está logueado
     exit;
 }

@@ -18,11 +18,11 @@ session_start();
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container">
     <a class="navbar-brand" href="/tarea2/php/dashboard.php">
-      <img src="../../img/finalInvert.svg" style="width: 35px; height: auto;" alt="Logo GESCON">
+      <img src="/tarea2/img/GESCONblanco.png" style="width: 35px; height: auto;" alt="Logo GESCON">
     </a>
 
 
-    <?php if (isset($_SESSION['autor_id']) || isset($_SESSION['revisor_id']) || isset($_SESSION['jefe_id'])): ?>
+    <?php if (isset($_SESSION['autor_id']) || isset($_SESSION['revisor_id']) || isset($_SESSION['jefe_rut'])): ?>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" 
               aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -43,7 +43,7 @@ session_start();
             <li class="nav-item"><a class="nav-link" href="historial_revisiones.php">Historial de revisiones</a></li>
             <li class="nav-item"><a class="nav-link text-danger" href="/tarea2/php/logout.php">Cerrar sesión</a></li>
           
-          <?php elseif (isset($_SESSION['jefe_id'])): ?>
+          <?php elseif (isset($_SESSION['jefe_rut'])): ?>
             <!-- Opciones para JEFE DE COMITÉ -->
             <li class="nav-item"><a class="nav-link" href="/tarea2/php/jefeRevisor/dashboard_jefe.php">Panel de control</a></li>
             <li class="nav-item"><a class="nav-link" href="/tarea2/php/jefeRevisor/asignar_revisores.php">Asignar revisores</a></li>
