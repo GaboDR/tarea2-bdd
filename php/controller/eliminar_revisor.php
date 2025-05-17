@@ -13,22 +13,33 @@ if (isset($_POST['btndelete'])){
         $ArticuloRevisorStmt->execute();
         $result = $ArticuloRevisorStmt->get_result();
 
-        if ($result->num_rows == 0){
-            $deleteQueryAgregada = "DELETE FROM especialidad_agregada WHERE ID_REVISOR = ?";
-            $deleteStmt = $conexion->prepare($deleteQueryAgregada);
-            $deleteStmt->bind_param("i", $id);
-            $deleteStmt->execute();
-    
-            $deleteQueryRevisor = "DELETE FROM revisor WHERE ID = ?";
-            $deleteRevisorStmt = $conexion->prepare($deleteQueryRevisor);
-            $deleteRevisorStmt->bind_param('i', $id);
-            $deleteRevisorStmt->execute();
+        $query = "SELECT * FROM jefe_comite JOIN revisor ON revisor.rut = jefe_comite.rut WHERE revisor.id = ?";
+        $queryStmt = $conexion->prepare($query);
+        $queryStmt->bind_param("i", $id);
+        $queryStmt->execute();
+        $resultQuery = $queryStmt->get_result();
 
-            $_SESSION['mensaje'] = "Revisor eliminado correctamente.";
-            $_SESSION['correo'] = "Se ha enviado una notificación mediante correo electrónico al revisor eliminado.";
+        if ($resultQuery->num_rows == 0){
+            if ($result->num_rows == 0){
+                $deleteQueryAgregada = "DELETE FROM especialidad_agregada WHERE ID_REVISOR = ?";
+                $deleteStmt = $conexion->prepare($deleteQueryAgregada);
+                $deleteStmt->bind_param("i", $id);
+                $deleteStmt->execute();
+        
+                $deleteQueryRevisor = "DELETE FROM revisor WHERE ID = ?";
+                $deleteRevisorStmt = $conexion->prepare($deleteQueryRevisor);
+                $deleteRevisorStmt->bind_param('i', $id);
+                $deleteRevisorStmt->execute();
+    
+                $_SESSION['mensaje'] = "Revisor eliminado correctamente.";
+                $_SESSION['correo'] = "Se ha enviado una notificación mediante correo electrónico al revisor eliminado.";
+            } else {
+                $_SESSION['mensaje'] = "El revisor seleccionado no puede ser eliminado ya que posee revisiones pendientes.";
+            }
         } else {
-            $_SESSION['mensaje'] = "El revisor seleccionado no puede ser eliminado ya posee una revision pendiente.";
+            throw new Exception("No es posible eliminar a un jefe de comité.");
         }
+
 
         $conexion->commit();
 

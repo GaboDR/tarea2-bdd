@@ -31,7 +31,7 @@ try {
         $intermedia_stmt->execute();
     }
 
-    header("Location: ../index.php");
+    header("Location: ../sesiones.php");
     exit;
 } catch (mysqli_sql_exception $e) {
     if (str_contains($e->getMessage(), 'Duplicate entry')) {

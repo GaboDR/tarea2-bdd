@@ -30,54 +30,13 @@ $result_topicos = $conexion->query($query_topicos);
 
 // Si hay un término de búsqueda, hacer una consulta con LIKE
 if (!empty($buscar)) {
-    $query = "SELECT
-    id,
-	nombre,
-    rut,
-    email,
-    GROUP_CONCAT(CONCAT(topico_especialidad, ', ', IFNULL(aux, '')) SEPARATOR ', ') AS especialidadesRevisor
-    FROM (
-        SELECT
-            id,
-            nombre,
-            rut,
-            email,
-            topico_especialidad,
-            GROUP_CONCAT(ESPECIALIDAD_EXTRA SEPARATOR ', ') AS aux
-        FROM 
-            revisor
-        LEFT JOIN
-            especialidad_agregada ON revisor.ID = especialidad_agregada.ID_REVISOR
-        GROUP BY 
-            ID_REVISOR
-    ) as subQuery WHERE nombre LIKE ? GROUP BY RUT LIMIT ? OFFSET ?;";
+    $query = "SELECT * FROM revisorYEspecialidad WHERE nombre LIKE ? LIMIT ? OFFSET ?";
     $buscar_param = "%" . $buscar . "%";
     $stmt = $conexion->prepare($query);
     $stmt->bind_param("sii", $buscar_param, $revisoresPorPagina, $offset);
 } else {
     // Consulta cuando no hay búsqueda
-    $query = "SELECT
-        id,
-        nombre,
-        rut,
-        email,
-        GROUP_CONCAT(CONCAT(topico_especialidad, ', ', IFNULL(aux, '')) SEPARATOR ', ') AS especialidadesRevisor
-        FROM (
-            SELECT
-                id,
-                nombre,
-                rut,
-                email,
-                topico_especialidad,
-                GROUP_CONCAT(ESPECIALIDAD_EXTRA SEPARATOR ', ') AS aux
-            FROM 
-                revisor
-            LEFT JOIN
-                especialidad_agregada ON revisor.ID = especialidad_agregada.ID_REVISOR
-            GROUP BY 
-                ID_REVISOR
-        ) as subQuery GROUP BY RUT LIMIT ? OFFSET ?";
-    
+    $query = "SELECT * FROM revisorYEspecialidad LIMIT ? OFFSET ?";
     $stmt = $conexion->prepare($query);
     $stmt->bind_param("ii", $revisoresPorPagina, $offset);
 }
@@ -88,11 +47,11 @@ $revisores = $resultado->fetch_all(MYSQLI_ASSOC);
 
 // Obtener el número total de artículos para calcular las páginas
 if (!empty($buscar)) {
-    $query_total = "SELECT COUNT(*) FROM revisor WHERE nombre LIKE ?";
+    $query_total = "SELECT COUNT(*) FROM revisorYEspecialidad WHERE nombre LIKE ?";
     $stmt_total = $conexion->prepare($query_total);
     $stmt_total->bind_param("s", $buscar_param);
 } else {
-    $query_total = "SELECT COUNT(*) FROM revisor";
+    $query_total = "SELECT COUNT(*) FROM revisorYEspecialidad";
     $stmt_total = $conexion->prepare($query_total);
 }
 
@@ -149,9 +108,9 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!empty($revisores)): ?> 
+                    <?php if (!empty($revisores)): ?>
                         <?php foreach ($revisores as $revisor): ?>
-                            <tr>
+                            <tr class="<?= ($revisor['esJefeComite'] == 1) ? 'jefe' : 'no-jefe' ?>">
                                 <td><?= htmlspecialchars($revisor['nombre']) ?></td>
                                 <td><?= htmlspecialchars($revisor['rut']) ?></td>
                                 <td><?= htmlspecialchars($revisor['email']) ?></td>
