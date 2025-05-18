@@ -2,15 +2,14 @@
 include('../db.php');
 session_start();
 
-if (isset($_POST['btnchangedata'])){
-    $idRevisor = $_POST['eleccion'];
-    $idArticulo = $_POST['id_articulo'];
-    $topicos = $_POST['topicos'];
+if (isset($_POST['btnasign'])) {
+    $idRevisor = $_POST['id_revisor'];
+    $especialidades = $_POST['especialidad'];
+    $idArticulo = $_POST['eleccionAsign'];
 
     $conexion->begin_transaction();
 
     try {
-        //obtener autores articulo
         $query = "SELECT a.nombre, a.id, a.rut
                     FROM autor a
                     WHERE a.id = (SELECT autor_contacto FROM articulo WHERE id = ?)
@@ -57,31 +56,8 @@ if (isset($_POST['btnchangedata'])){
     } catch (Exception $e) {
         $conexion->rollback();
 
-        $_SESSION['error'] = "Error al asignar revisor: " . $e->getMessage();
+        $_SESSION['error'] = "No ha sido posible realizar la asignación indicada: " . $e->getMessage();
         header("Location: ../jefeRevisor/asignar_revisores.php");
-        exit;
-    }
-} elseif (isset($_POST['btnrandom'])){
-    $idArticulo = $_POST['id_articulo'];
-
-    $conexion->begin_transaction();
-
-    try {
-        $query = "CALL asignarRevisoresAutomaticamente(?)";
-        $queryStmt = $conexion->prepare($query);
-        $queryStmt->bind_param("i", $idArticulo);
-        $queryStmt->execute();
-
-        $conexion->commit();
-
-        $_SESSION['mensaje'] = "Se han asignado correctamente 3 revisores aleatoriamente.";
-        header("Location: ../jefeRevisor/asignar_revisores.php");
-    } catch (Exception $e) {
-        $conexion->rollback();
-
-        $_SESSION['error'] = "Error al asignar revisor: " . $e->getMessage();
-        header("Location: ../jefeRevisor/asignar_revisores.php");
-        exit;
     }
 }
 ?>
