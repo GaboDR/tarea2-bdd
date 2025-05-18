@@ -29,14 +29,14 @@ try {
             $_SESSION['revisor_id'] = $usuario['id'];
             $_SESSION['revisor_nombre'] = $usuario['nombre'];
 
-            header("Location: ../dashboard.php"); // o donde quieras redirigir
+            header("Location: ../revisor/perfil.php"); // o donde quieras redirigir
             exit;
         } else {
-            header("Location: ../login/login_autor.php?error=contrasena_incorrecta");
+            header("Location: ../login/login_revisor.php?error=contrasena_incorrecta");
             exit;
         }
     } else {
-        header("Location: ../login/login_autor.php?error=usuario_no_encontrado");
+        header("Location: ../login/login_revisor.php?error=usuario_no_encontrado");
         exit;
     }
 

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 17-05-2025 a las 20:21:55
+-- Tiempo de generación: 19-05-2025 a las 01:28:41
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -20,6 +20,98 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `tarea2`
 --
+
+DELIMITER $$
+--
+-- Procedimientos
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AsignarRevisoresAutomaticamente` (IN `p_idArticulo` INT)   BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_rutRevisor VARCHAR(12) COLLATE utf8mb4_unicode_ci;
+    DECLARE revisor_count INT DEFAULT 0;
+
+    -- Cursor y handler
+    DECLARE cur CURSOR FOR
+        SELECT rutRevisor FROM RevisoresCandidatos;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Crear tabla temporal
+    DROP TEMPORARY TABLE IF EXISTS RevisoresCandidatos;
+    CREATE TEMPORARY TABLE RevisoresCandidatos (
+        rutRevisor VARCHAR(12) COLLATE utf8mb4_unicode_ci PRIMARY KEY
+    );
+
+    -- Insertar revisores válidos: al menos un tópico coincide y no son autores del artículo
+    INSERT INTO RevisoresCandidatos(rutRevisor)
+    SELECT DISTINCT r.RUT COLLATE utf8mb4_unicode_ci
+    FROM Revisor r
+    LEFT JOIN Especialidad_agregada ea ON r.ID = ea.ID_REVISOR
+    WHERE (
+        r.TOPICO_ESPECIALIDAD COLLATE utf8mb4_unicode_ci IN (
+            SELECT TOPICO_PRINCIPAL COLLATE utf8mb4_unicode_ci FROM Articulo WHERE ID = p_idArticulo
+            UNION
+            SELECT TOPICO_EXTRA COLLATE utf8mb4_unicode_ci FROM Topicos_extra WHERE ID_ARTICULO = p_idArticulo
+        )
+        OR ea.ESPECIALIDAD_EXTRA COLLATE utf8mb4_unicode_ci IN (
+            SELECT TOPICO_PRINCIPAL COLLATE utf8mb4_unicode_ci FROM Articulo WHERE ID = p_idArticulo
+            UNION
+            SELECT TOPICO_EXTRA COLLATE utf8mb4_unicode_ci FROM Topicos_extra WHERE ID_ARTICULO = p_idArticulo
+        )
+    )
+    AND r.RUT COLLATE utf8mb4_unicode_ci NOT IN (
+        SELECT a.RUT COLLATE utf8mb4_unicode_ci
+        FROM Autor_participante ap
+        JOIN Autor a ON ap.ID_AUTOR = a.ID
+        WHERE ap.ID_ARTICULO = p_idArticulo
+    );
+
+    -- Cursor para seleccionar hasta 3 revisores
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO v_rutRevisor;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Insertar relación en Articulo_revisor
+        INSERT INTO Articulo_revisor (ID_ARTICULO, ID_REVISOR)
+        SELECT p_idArticulo, r.ID
+        FROM Revisor r
+        WHERE r.RUT COLLATE utf8mb4_unicode_ci = v_rutRevisor;
+
+        SET revisor_count = revisor_count + 1;
+        IF revisor_count >= 3 THEN
+            LEAVE read_loop;
+        END IF;
+    END LOOP;
+
+    CLOSE cur;
+    DROP TEMPORARY TABLE IF EXISTS RevisoresCandidatos;
+END$$
+
+--
+-- Funciones
+--
+CREATE DEFINER=`root`@`localhost` FUNCTION `calcular_promedio_y_actualizar` (`articulo_id` INT) RETURNS DECIMAL(5,2) DETERMINISTIC BEGIN
+    DECLARE promedio DECIMAL(5,2);
+
+    -- Calcular el promedio de puntuaciones para el artículo
+    SELECT AVG(r.puntuacion_global)
+    INTO promedio
+    FROM REVISION r
+    INNER JOIN ARTICULO_REVISOR ar ON r.ARTICULO_REVISOR_ID = ar.id
+    WHERE ar.id_articulo = articulo_id;
+
+    -- Actualizar el puntajeFinal del artículo
+    UPDATE ARTICULO
+    SET puntajeFinal = promedio
+    WHERE id = articulo_id;
+
+    RETURN promedio;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -43,7 +135,7 @@ CREATE TABLE `articulo` (
 --
 
 INSERT INTO `articulo` (`ID`, `TITULO`, `AUTOR_CONTACTO`, `TOPICO_PRINCIPAL`, `FECHA_ENVIO`, `RESUMEN`, `NUM_REVISORES`, `puntajeFinal`) VALUES
-(8, 'Porfa funciona', 5, 'environment', '0000-00-00', 'hay pura fe', 0, NULL),
+(8, 'Porfa funciona', 5, 'environment', '0000-00-00', 'hay pura fe', 3, NULL),
 (10, 'Hola', 8, 'culture', '0000-00-00', 'Prueba de correo enviado', 0, NULL),
 (11, 'Prueba2', 9, 'education', '0000-00-00', 'test', 0, NULL);
 
@@ -58,6 +150,13 @@ CREATE TABLE `articulo_revisor` (
   `ID_ARTICULO` int(11) NOT NULL,
   `ID_REVISOR` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `articulo_revisor`
+--
+
+INSERT INTO `articulo_revisor` (`ID`, `ID_ARTICULO`, `ID_REVISOR`) VALUES
+(60, 10, 26);
 
 -- --------------------------------------------------------
 
@@ -124,14 +223,15 @@ INSERT INTO `especialidad_agregada` (`ID_REVISOR`, `ESPECIALIDAD_EXTRA`) VALUES
 (1, 'food'),
 (1, 'health'),
 (1, 'history'),
+(18, 'fashion'),
 (18, 'health'),
 (18, 'history'),
-(19, 'education'),
-(19, 'environment'),
 (20, 'education'),
-(20, 'environment'),
-(22, 'education'),
-(22, 'environment');
+(26, 'finance'),
+(26, 'history'),
+(27, 'education'),
+(27, 'environment'),
+(27, 'politics');
 
 -- --------------------------------------------------------
 
@@ -168,6 +268,51 @@ CREATE TABLE `revision` (
   `relevancia` int(11) DEFAULT NULL CHECK (`relevancia` between 1 and 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Disparadores `revision`
+--
+DELIMITER $$
+CREATE TRIGGER `aumentar_num_revisores` AFTER INSERT ON `revision` FOR EACH ROW BEGIN
+  DECLARE articulo_id INT;
+
+  -- Obtener el ID del artículo a partir del ID de la relación articulo_revisor
+  SELECT ID_ARTICULO INTO articulo_id
+  FROM articulo_revisor
+  WHERE ID = NEW.ARTICULO_REVISOR_ID;
+
+  -- Aumentar el contador en la tabla articulo
+  UPDATE articulo
+
+  SET NUM_REVISORES = NUM_REVISORES + 1
+  WHERE ID = articulo_id;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trigger_actualizar_promedio_cuando_3` AFTER INSERT ON `revision` FOR EACH ROW BEGIN
+    DECLARE v_articulo_id INT;
+    DECLARE total_revisiones INT;
+
+    -- Obtener el ID del artículo desde ARTICULO_REVISOR
+    SELECT id_articulo INTO v_articulo_id
+    FROM ARTICULO_REVISOR
+    WHERE id = NEW.ARTICULO_REVISOR_ID;
+
+    -- Contar cuántas revisiones hay para ese artículo
+    SELECT COUNT(*)
+    INTO total_revisiones
+    FROM REVISION r
+    INNER JOIN ARTICULO_REVISOR ar ON r.ARTICULO_REVISOR_ID = ar.id
+    WHERE ar.id_articulo = v_articulo_id;
+
+    -- Si hay exactamente 3 revisiones, actualizar el puntaje final
+    IF total_revisiones = 3 THEN
+        CALL calcular_promedio_y_actualizar(v_articulo_id);
+    END IF;
+END
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -189,10 +334,10 @@ CREATE TABLE `revisor` (
 
 INSERT INTO `revisor` (`ID`, `RUT`, `NOMBRE`, `EMAIL`, `TOPICO_ESPECIALIDAD`, `CONTRASENA`) VALUES
 (1, '27148851-3', 'Gabriel Delgado', 'gaboo90685@gmail.com', 'education', '$2y$10$GDVYDpOpF22waexwCwU3yu5aiYaQfj8UJ0bffyTWBh3T0FEBfVYh2'),
-(18, '21854002-3', 'Martina', 'martiviva3@gmail.com', 'fashion', '$2y$10$AW79LoTD.6m89tJDh33kOO/8qMLlRlabbmGsjhcZcLqHFIEMYHb9G'),
-(19, '99999999-9', 'Test', 'test@test.com', 'culture', '$2y$10$bnGPJJfFBd2nVcIJ5.tXFOUTcWBtIWxIqz.kZz.xCUfmEm4lTOtoe'),
+(18, '21854002-3', 'Martina', 'martiviva3@gmail.com', 'education', '$2y$10$AW79LoTD.6m89tJDh33kOO/8qMLlRlabbmGsjhcZcLqHFIEMYHb9G'),
 (20, '44444444-4', 'Kitty', 'kitty@gmail.com', 'culture', '$2y$10$vwr.gXU.YLEhFes5F9.Z2utMmoyzqeKXM1faqDLIEDZzu7x.IbCwO'),
-(22, '11111111-1', 'Lulu', 'lulu@gmail.com', 'culture', '$2y$10$BchJdCtIHWgp0UEPRRx5nuBunCeC.jnCPjoVchYw8NjWfW6.brSLG');
+(26, '11111111-1', 'Lulu', 'lulu@gmail.com', 'culture', '$2y$10$yuoWEwMeYlQT.HdEOcuGsOP1QuC.iOf0UMr4oIg74/kOfc16rcEwu'),
+(27, '77777777-7', 'UserPrueba', 'pruebauser@gmail.com', 'culture', '$2y$10$jVEtqzxmqkMvg4BXDVhzSuXOF0FsBhBBJgrQucAyvR8FZ..qaqf/q');
 
 -- --------------------------------------------------------
 
@@ -205,7 +350,7 @@ CREATE TABLE `revisoryespecialidad` (
 ,`nombre` varchar(50)
 ,`rut` varchar(10)
 ,`email` varchar(50)
-,`especialidadesRevisor` mediumtext
+,`especialidadesRevisor` longtext
 ,`esJefeComite` int(1)
 );
 
@@ -263,11 +408,58 @@ INSERT INTO `topico_especialidad` (`NOMBRE`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Estructura Stand-in para la vista `vista_articulos_autores_revisores`
+-- (Véase abajo para la vista actual)
+--
+CREATE TABLE `vista_articulos_autores_revisores` (
+`articulo_id` int(11)
+,`titulo_articulo` varchar(50)
+,`autores` mediumtext
+,`topicos` mediumtext
+,`revisores` mediumtext
+);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura Stand-in para la vista `vista_revisores_completa`
+-- (Véase abajo para la vista actual)
+--
+CREATE TABLE `vista_revisores_completa` (
+`Revisor_ID` int(11)
+,`Revisor_Nombre` varchar(50)
+,`Revisor_Rut` varchar(10)
+,`Todas_Especialidades` mediumtext
+,`Articulos_Asignados` mediumtext
+,`id_Articulos_Asignados` mediumtext
+);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura para la vista `revisoryespecialidad`
 --
 DROP TABLE IF EXISTS `revisoryespecialidad`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `revisoryespecialidad`  AS SELECT `revisor`.`ID` AS `id`, `revisor`.`NOMBRE` AS `nombre`, `revisor`.`RUT` AS `rut`, `revisor`.`EMAIL` AS `email`, group_concat(distinct coalesce(`e`.`ESPECIALIDAD_EXTRA`,`revisor`.`TOPICO_ESPECIALIDAD`) separator ', ') AS `especialidadesRevisor`, CASE WHEN `jc`.`RUT` is not null THEN 1 ELSE 0 END AS `esJefeComite` FROM ((`revisor` left join `especialidad_agregada` `e` on(`e`.`ID_REVISOR` = `revisor`.`ID`)) left join `jefe_comite` `jc` on(`revisor`.`RUT` = `jc`.`RUT`)) GROUP BY `revisor`.`ID`, `revisor`.`NOMBRE`, `revisor`.`RUT`, `revisor`.`EMAIL` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `revisoryespecialidad`  AS SELECT `r`.`ID` AS `id`, `r`.`NOMBRE` AS `nombre`, `r`.`RUT` AS `rut`, `r`.`EMAIL` AS `email`, concat(`r`.`TOPICO_ESPECIALIDAD`,if(`extra`.`especialidades` is not null,concat(', ',`extra`.`especialidades`),'')) AS `especialidadesRevisor`, CASE WHEN `jc`.`RUT` is not null THEN 1 ELSE 0 END AS `esJefeComite` FROM ((`revisor` `r` left join (select `especialidad_agregada`.`ID_REVISOR` AS `ID_REVISOR`,group_concat(`especialidad_agregada`.`ESPECIALIDAD_EXTRA` separator ', ') AS `especialidades` from `especialidad_agregada` group by `especialidad_agregada`.`ID_REVISOR`) `extra` on(`r`.`ID` = `extra`.`ID_REVISOR`)) left join `jefe_comite` `jc` on(`jc`.`RUT` = `r`.`RUT`)) ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura para la vista `vista_articulos_autores_revisores`
+--
+DROP TABLE IF EXISTS `vista_articulos_autores_revisores`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vista_articulos_autores_revisores`  AS SELECT `a`.`ID` AS `articulo_id`, `a`.`TITULO` AS `titulo_articulo`, group_concat(distinct concat(`aut`.`Nombre`) separator ', ') AS `autores`, group_concat(distinct `topico`.`Nombre` separator ', ') AS `topicos`, group_concat(distinct concat(`r`.`NOMBRE`) separator ', ') AS `revisores` FROM (((((((((`articulo` `a` left join `autor` `autor_principal` on(`autor_principal`.`ID` = `a`.`AUTOR_CONTACTO`)) left join `autor_participante` `ap` on(`ap`.`ID_ARTICULO` = `a`.`ID`)) left join `autor` `aut_part` on(`ap`.`ID_AUTOR` = `aut_part`.`ID`)) left join (select `autor`.`ID` AS `ID`,`autor`.`NOMBRE` AS `Nombre`,`autor`.`EMAIL` AS `Email` from `autor`) `aut` on(`aut`.`ID` = `a`.`AUTOR_CONTACTO` or `aut`.`ID` in (select `autor_participante`.`ID_AUTOR` from `autor_participante` where `autor_participante`.`ID_ARTICULO` = `a`.`ID`))) left join (select distinct `topico_especialidad`.`NOMBRE` AS `Nombre` from `topico_especialidad`) `topico_principal` on(`topico_principal`.`Nombre` = `a`.`TOPICO_PRINCIPAL`)) left join `topicos_extra` `te` on(`te`.`ID_ARTICULO` = `a`.`ID`)) left join (select `topico_especialidad`.`NOMBRE` AS `Nombre` from `topico_especialidad` union select `topicos_extra`.`TOPICO_EXTRA` AS `Nombre` from `topicos_extra`) `topico` on(`topico`.`Nombre` = `a`.`TOPICO_PRINCIPAL` or `topico`.`Nombre` = `te`.`TOPICO_EXTRA`)) left join `articulo_revisor` `ar` on(`ar`.`ID_ARTICULO` = `a`.`ID`)) left join `revisor` `r` on(`r`.`ID` = `ar`.`ID_REVISOR`)) GROUP BY `a`.`ID`, `a`.`TITULO` ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura para la vista `vista_revisores_completa`
+--
+DROP TABLE IF EXISTS `vista_revisores_completa`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vista_revisores_completa`  AS SELECT `r`.`ID` AS `Revisor_ID`, `r`.`NOMBRE` AS `Revisor_Nombre`, `r`.`RUT` AS `Revisor_Rut`, concat(`te`.`NOMBRE`,ifnull(concat(', ',(select group_concat(`ea`.`ESPECIALIDAD_EXTRA` separator ', ') from (`especialidad_agregada` `ea` join `topico_especialidad` `te_extra` on(`ea`.`ESPECIALIDAD_EXTRA` = `te_extra`.`NOMBRE`)) where `ea`.`ID_REVISOR` = `r`.`ID`)),'')) AS `Todas_Especialidades`, (select group_concat(`a`.`TITULO` separator '| ') from (`articulo_revisor` `ar` join `articulo` `a` on(`ar`.`ID_ARTICULO` = `a`.`ID`)) where `ar`.`ID_REVISOR` = `r`.`ID`) AS `Articulos_Asignados`, (select group_concat(`a`.`ID` separator '| ') from (`articulo_revisor` `ar` join `articulo` `a` on(`ar`.`ID_ARTICULO` = `a`.`ID`)) where `ar`.`ID_REVISOR` = `r`.`ID`) AS `id_Articulos_Asignados` FROM (`revisor` `r` left join `topico_especialidad` `te` on(`r`.`TOPICO_ESPECIALIDAD` = `te`.`NOMBRE`)) ;
 
 --
 -- Índices para tablas volcadas
@@ -361,7 +553,7 @@ ALTER TABLE `articulo`
 -- AUTO_INCREMENT de la tabla `articulo_revisor`
 --
 ALTER TABLE `articulo_revisor`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
 
 --
 -- AUTO_INCREMENT de la tabla `autor`
@@ -379,11 +571,7 @@ ALTER TABLE `revision`
 -- AUTO_INCREMENT de la tabla `revisor`
 --
 ALTER TABLE `revisor`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
-
---
--- Restricciones para tablas volcadas
---
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- Restricciones para tablas volcadas

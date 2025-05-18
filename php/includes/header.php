@@ -46,7 +46,7 @@ session_start();
           
           <?php elseif (isset($_SESSION['jefe_rut'])): ?>
             <!-- Opciones para JEFE DE COMITÉ -->
-            <li class="nav-item"><a class="nav-link" href="/tarea2/php/jefeRevisor/dashboard_jefe.php">Panel de control</a></li>
+            <li class="nav-item"><a class="nav-link" href="/tarea2/php/jefeRevisor/mainJefe.php">Mi Perfil</a></li>
             <li class="nav-item"><a class="nav-link" href="/tarea2/php/jefeRevisor/asignar_revisores.php">Asignar revisores</a></li>
             <li class="nav-item"><a class="nav-link" href="/tarea2/php/jefeRevisor/gestion_revisores.php">Gestionar revisores</a></li>
             <li class="nav-item"><a class="nav-link text-danger" href="/tarea2/php/logout.php">Cerrar sesión</a></li>
