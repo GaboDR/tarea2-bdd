@@ -31,6 +31,7 @@ try {
         $intermedia_stmt->bind_param("is", $revisor_id, $topico_i);
         $intermedia_stmt->execute();
     }
+    $_SESSION['revisor_id'] = $revisor_id;
 
     header("Location: ../revisor/perfil.php");
     exit;

@@ -28,7 +28,7 @@ $result = mysqli_query($conexion, $query);
 
             <div class="mb-3">
               <label for="rut" class="form-label">RUT</label>
-              <input type="text" class="form-control" id="rut" name="rut" required>
+              <input type="text" class="form-control" id="rut" name="rut" maxlength="10" required>
             </div>
 
             <div class="mb-3">

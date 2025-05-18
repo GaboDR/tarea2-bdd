@@ -423,3 +423,83 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+--triggers y funtion
+
+DELIMITER //
+CREATE TRIGGER aumentar_num_revisores
+AFTER INSERT ON revision
+FOR EACH ROW
+BEGIN
+  DECLARE articulo_id INT;
+
+  -- Obtener el ID del artículo a partir del ID de la relación articulo_revisor
+  SELECT ID_ARTICULO INTO articulo_id
+  FROM articulo_revisor
+  WHERE ID = NEW.ARTICULO_REVISOR_ID;
+
+  -- Aumentar el contador en la tabla articulo
+  UPDATE articulo
+  SET NUM_REVISORES = NUM_REVISORES + 1
+  WHERE ID = articulo_id;
+END;
+//
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE FUNCTION calcular_promedio_y_actualizar(articulo_id INT) 
+RETURNS DECIMAL(5,2)
+DETERMINISTIC
+BEGIN
+    DECLARE promedio DECIMAL(5,2);
+
+    -- Calcular el promedio de puntuaciones para el artículo
+    SELECT AVG(r.puntuacion_global)
+    INTO promedio
+    FROM REVISION r
+    INNER JOIN ARTICULO_REVISOR ar ON r.ARTICULO_REVISOR_ID = ar.id
+    WHERE ar.id_articulo = articulo_id;
+
+    -- Actualizar el puntajeFinal del artículo
+    UPDATE ARTICULO
+    SET puntajeFinal = promedio
+    WHERE id = articulo_id;
+
+    RETURN promedio;
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trigger_actualizar_promedio_cuando_3
+AFTER INSERT ON REVISION
+FOR EACH ROW
+BEGIN
+    DECLARE v_articulo_id INT;
+    DECLARE total_revisiones INT;
+
+    -- Obtener el ID del artículo desde ARTICULO_REVISOR
+    SELECT id_articulo INTO v_articulo_id
+    FROM ARTICULO_REVISOR
+    WHERE id = NEW.ARTICULO_REVISOR_ID;
+
+    -- Contar cuántas revisiones hay para ese artículo
+    SELECT COUNT(*)
+    INTO total_revisiones
+    FROM REVISION r
+    INNER JOIN ARTICULO_REVISOR ar ON r.ARTICULO_REVISOR_ID = ar.id
+    WHERE ar.id_articulo = v_articulo_id;
+
+    -- Si hay exactamente 3 revisiones, actualizar el puntaje final
+    IF total_revisiones = 3 THEN
+        CALL calcular_promedio_y_actualizar(v_articulo_id);
+    END IF;
+END;
+//
+
+DELIMITER ;

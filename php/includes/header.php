@@ -42,7 +42,7 @@ session_start();
             <!-- Opciones para REVISOR -->
             <li class="nav-item"><a class="nav-link" href="/tarea2/php/revisor/perfil.php">Mi Perfil</a></li>
 
-            <li class="nav-item"><a class="nav-link" href="dashboard_revisor.php">Artículos a revisar</a></li>
+            <li class="nav-item"><a class="nav-link" href="articulos_revisar.php">Artículos a revisar</a></li>
             <li class="nav-item"><a class="nav-link" href="historial_revisiones.php">Historial de revisiones</a></li>
             <li class="nav-item"><a class="nav-link text-danger" href="/tarea2/php/logout.php">Cerrar sesión</a></li>
           
