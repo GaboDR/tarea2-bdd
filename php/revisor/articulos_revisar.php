@@ -5,7 +5,9 @@ include('../db.php');
 $revisor_id = $_SESSION['revisor_id'];
 
 // Obtener todos los artículos asignados al revisor junto con su posible revisión
-$query = "SELECT a.id, a.titulo, a.resumen, r.id AS revision_id
+$query = "SELECT a.id, a.titulo, a.resumen, 
+                 r.id AS revision_id, 
+                 r.puntuacion_global, r.originalidad, r.claridad, r.relevancia, r.comentarios
           FROM ARTICULO a
           INNER JOIN ARTICULO_REVISOR ar ON a.id = ar.id_articulo
           LEFT JOIN REVISION r ON r.ARTICULO_REVISOR_ID = ar.id
@@ -19,6 +21,12 @@ $result = $stmt->get_result();
 
 <div class="container mt-5">
   <h2 class="mb-4 text-center">Artículos Asignados</h2>
+  <?php
+        include('../includes/flash.php');
+        mostrar_mensaje_sesion('error');
+        mostrar_mensaje_sesion('exito');
+        mostrar_mensaje_sesion('info');
+        ?>
 
   <?php while ($row = $result->fetch_assoc()): ?>
     <div class="card mb-4 shadow-sm">
@@ -60,28 +68,27 @@ $result = $stmt->get_result();
 
             <div class="mb-3">
               <label>Puntuación Global (1-10)</label>
-              <input type="number" name="puntuacion_global" min="1" max="10" class="form-control" required>
+              <input type="number" name="puntuacion_global" min="1" max="10" class="form-control" required value="<?= htmlspecialchars($row['puntuacion_global']) ?>">
             </div>
 
             <div class="mb-3">
               <label>Originalidad (1-5)</label>
-              <input type="number" name="originalidad" min="1" max="5" class="form-control" required>
+              <input type="number" name="originalidad" min="1" max="5" class="form-control" required value="<?= htmlspecialchars($row['originalidad']) ?>">
             </div>
 
             <div class="mb-3">
               <label>Claridad (1-5)</label>
-              <input type="number" name="claridad" min="1" max="5" class="form-control" required>
+              <input type="number" name="claridad" min="1" max="5" class="form-control" required value="<?= htmlspecialchars($row['claridad']) ?>">
             </div>
 
             <div class="mb-3">
               <label>Relevancia (1-5)</label>
-              <input type="number" name="relevancia" min="1" max="5" class="form-control" required>
+              <input type="number" name="relevancia" min="1" max="5" class="form-control" required value="<?= htmlspecialchars($row['relevancia']) ?>">
             </div>
 
             <div class="mb-3">
               <label>Comentarios</label>
-              <textarea name="comentarios" rows="4" class="form-control" required></textarea>
-            </div>
+              <textarea name="comentarios" rows="4" class="form-control" required><?= htmlspecialchars($row['comentarios']) ?></textarea>            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

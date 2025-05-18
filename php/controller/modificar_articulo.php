@@ -3,7 +3,8 @@ include('../db.php');
 session_start();
 
 if (!isset($_SESSION['autor_id'])) {
-    die("Acceso no autorizado.");
+    header("Location: ../login/login_autor.php");
+    exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -22,7 +23,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $articulo = $check_result->fetch_assoc();
 
     if (!$articulo || $articulo['num_revisores'] > 0) {
-        die("Este artículo no se puede modificar porque ya está en revisión.");
+        $_SESSION['error'] = "Este artículo no se puede modificar porque ya está en revisión.";
+        header("Location: ../autor/creararticulo.php");
+        exit;
     }
 
     // Iniciar transacción
@@ -67,7 +70,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit;
     } catch (Exception $e) {
         $conexion->rollback();
-        die("Error al modificar el artículo: " . $e->getMessage());
+
+        $_SESSION['error'] = $e->getMessage();
+        header("Location: ../autor/ver_art.php");
+        exit;
     }
 } else {
     echo "Acceso inválido.";
