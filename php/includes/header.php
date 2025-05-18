@@ -52,7 +52,7 @@ session_start();
             <li class="nav-item"><a class="nav-link text-danger" href="/tarea2/php/logout.php">Cerrar sesión</a></li>
           <?php endif; ?>
 
-
+          <li class="nav-item"><a class="nav-link" href="/tarea2/php/index.php">Revisiones</a></li>
         </ul>
       </div>
     <?php endif; ?>
