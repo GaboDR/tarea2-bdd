@@ -1,11 +1,3 @@
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionar revisores</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
-    <link rel="stylesheet" href="../../css/jefeRevisor/gestionRevisores.css">
-</head>
-
 <?php
 include('../includes/header.php'); 
 include('../db.php');
@@ -19,23 +11,19 @@ $revisoresPorPagina = 10;
 
 $actualPage = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 
-// Calcular el desplazamiento (OFFSET) para la consulta SQL
 $offset = ($actualPage - 1) * $revisoresPorPagina;
 
-// Obtener el término de búsqueda, si existe
 $buscar = isset($_GET['buscar']) ? $_GET['buscar'] : '';
 
 $query_topicos = "SELECT nombre FROM topico_especialidad";
 $result_topicos = $conexion->query($query_topicos);
 
-// Si hay un término de búsqueda, hacer una consulta con LIKE
 if (!empty($buscar)) {
     $query = "SELECT * FROM revisorYEspecialidad WHERE nombre LIKE ? LIMIT ? OFFSET ?";
     $buscar_param = "%" . $buscar . "%";
     $stmt = $conexion->prepare($query);
     $stmt->bind_param("sii", $buscar_param, $revisoresPorPagina, $offset);
 } else {
-    // Consulta cuando no hay búsqueda
     $query = "SELECT * FROM revisorYEspecialidad LIMIT ? OFFSET ?";
     $stmt = $conexion->prepare($query);
     $stmt->bind_param("ii", $revisoresPorPagina, $offset);
@@ -45,7 +33,6 @@ $stmt->execute();
 $resultado = $stmt->get_result();
 $revisores = $resultado->fetch_all(MYSQLI_ASSOC);
 
-// Obtener el número total de artículos para calcular las páginas
 if (!empty($buscar)) {
     $query_total = "SELECT COUNT(*) FROM revisorYEspecialidad WHERE nombre LIKE ?";
     $stmt_total = $conexion->prepare($query_total);
@@ -59,9 +46,15 @@ $stmt_total->execute();
 $resultado_total = $stmt_total->get_result();
 $total_revisores = $resultado_total->fetch_row()[0];
 
-// Calcular el número total de páginas
 $total_paginas = ceil($total_revisores / $revisoresPorPagina);
 ?>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar revisores</title>
+    <link rel="stylesheet" href="../../css/jefeRevisor/gestionRevisores.css">
+</head>
 
 <!-- Contenedor principal con Bootstrap -->
 <div class="container mt-5">
@@ -97,7 +90,7 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#appendModal">Agregar revisor</button>
             </div>
             <!-- Tabla de artículos -->
-            <table class="table table-bordered table-striped">
+            <table class="table table-bordered">
                 <thead class="thead-dark">
                     <tr>
                         <th>Nombre</th>
@@ -110,7 +103,7 @@ $total_paginas = ceil($total_revisores / $revisoresPorPagina);
                 <tbody>
                     <?php if (!empty($revisores)): ?>
                         <?php foreach ($revisores as $revisor): ?>
-                            <tr class="<?= ($revisor['esJefeComite'] == 1) ? 'jefe' : 'no-jefe' ?>">
+                            <tr class="<?= ($revisor['esJefeComite'] == 1) ? 'jefe table-info' : 'no-jefe' ?>">
                                 <td><?= htmlspecialchars($revisor['nombre']) ?></td>
                                 <td><?= htmlspecialchars($revisor['rut']) ?></td>
                                 <td><?= htmlspecialchars($revisor['email']) ?></td>

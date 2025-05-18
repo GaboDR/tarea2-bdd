@@ -6,11 +6,7 @@
 
 /* Alternativa profesional */
 .table .jefe {
-    border-left: 3px solid #4caf50; /* Verde */
-}
-
-.table .no-jefe {
-    background-color: #e3f2fd; /* Azul muy claro */
+    border-left: 3px solid #5ca6fa; /* Verde */
 }
 
 .table tbody tr:hover {
