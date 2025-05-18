@@ -43,6 +43,12 @@ while ($row = $result_autores->fetch_assoc()) {
 
 <div class="container mt-5">
     <h2>Mis Artículos</h2>
+    <?php
+        include('../includes/flash.php');
+        mostrar_mensaje_sesion('error');
+        mostrar_mensaje_sesion('exito');
+        mostrar_mensaje_sesion('info');
+        ?>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -60,11 +66,56 @@ while ($row = $result_autores->fetch_assoc()) {
                     <td><?= $articulo['num_revisores'] > 0 ? "En Revisión" : "Pendiente" ?></td>
                     <td>
                         <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modalModificar<?= $articulo['id'] ?>" <?= $articulo['num_revisores'] > 0 ? "disabled" : "" ?>>Modificar</button>
-                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalEliminar<?= $articulo['id'] ?>">Eliminar</button>
+                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalEliminar<?= $articulo['id'] ?>" <?= $articulo['num_revisores'] > 0 ? "disabled" : "" ?>>Eliminar</button>
                     </td>
                 </tr>
 
+                <!-- Revisiones -->
+                <?php
+                $revisiones_stmt = $conexion->prepare("
+                    SELECT r.puntuacion_global, r.originalidad, r.claridad, r.relevancia, r.comentarios, rv.nombre AS revisor_nombre
+                    FROM revision r
+                    JOIN articulo_revisor ar ON r.articulo_revisor_id = ar.id
+                    JOIN revisor rv ON ar.id_revisor = rv.id
+                    WHERE ar.id_articulo = ?
+                ");
+                $revisiones_stmt->bind_param("i", $articulo['id']);
+                $revisiones_stmt->execute();
+                $revisiones_result = $revisiones_stmt->get_result();
+                ?>
+
+                <?php if ($revisiones_result->num_rows > 0): ?>
+                <tr>
+                    <td colspan="4">
+                        <strong>Revisiones Realizadas:</strong>
+                        <div class="accordion" id="accordionRevisiones<?= $articulo['id'] ?>">
+                            <?php $index = 0; ?>
+                            <?php while ($rev = $revisiones_result->fetch_assoc()): ?>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading<?= $articulo['id'] . $index ?>">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $articulo['id'] . $index ?>" aria-expanded="false" aria-controls="collapse<?= $articulo['id'] . $index ?>">
+                                            Revisor: <?= htmlspecialchars($rev['revisor_nombre']) ?>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse<?= $articulo['id'] . $index ?>" class="accordion-collapse collapse" aria-labelledby="heading<?= $articulo['id'] . $index ?>" data-bs-parent="#accordionRevisiones<?= $articulo['id'] ?>">
+                                        <div class="accordion-body">
+                                            <p><strong>Puntuación Global:</strong> <?= $rev['puntuacion_global'] ?></p>
+                                            <p><strong>Originalidad:</strong> <?= $rev['originalidad'] ?></p>
+                                            <p><strong>Claridad:</strong> <?= $rev['claridad'] ?></p>
+                                            <p><strong>Relevancia:</strong> <?= $rev['relevancia'] ?></p>
+                                            <p><strong>Comentarios:</strong> <?= nl2br(htmlspecialchars($rev['comentarios'])) ?></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php $index++; ?>
+                            <?php endwhile; ?>
+                        </div>
+                    </td>
+                </tr>
+                <?php endif; ?>
+
                 <!-- Modal Modificar -->
+                <!-- ... tu modal de modificar aquí como ya lo tenías ... -->
                 <div class="modal fade" id="modalModificar<?= $articulo['id'] ?>" tabindex="-1" role="dialog">
                     <div class="modal-dialog" role="document">
                         <form action="../controller/modificar_articulo.php" method="POST">
@@ -142,6 +193,7 @@ while ($row = $result_autores->fetch_assoc()) {
                 </div>
 
                 <!-- Modal Eliminar -->
+                <!-- ... tu modal de eliminar aquí como ya lo tenías ... -->
                 <div class="modal fade" id="modalEliminar<?= $articulo['id'] ?>" tabindex="-1" role="dialog">
                     <div class="modal-dialog" role="document">
                         <form action="../controller/eliminar_articulo.php" method="POST">
@@ -166,6 +218,7 @@ while ($row = $result_autores->fetch_assoc()) {
         </tbody>
     </table>
 </div>
+
 
 <script>
 const checkboxes = document.querySelectorAll('.autor-checkbox');

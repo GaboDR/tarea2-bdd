@@ -4,7 +4,8 @@ include('../db.php');
 session_start();
 
 if (!isset($_SESSION['autor_id'])) {
-    die("Acceso no autorizado.");
+    header("Location: ../login/login_autor.php");
+    exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -56,7 +57,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit;
     } catch (Exception $e) {
         $conexion->rollback();
-        die("Error al guardar el artículo: " . $e->getMessage());
+        $error = $e->getMessage();
+
+        $_SESSION['error'] = $error;
+        header("Location: ../autor/crear_articulo.php");
+        exit;
     }
 } else {
     echo "Acceso inválido.";

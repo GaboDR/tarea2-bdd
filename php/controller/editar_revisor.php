@@ -3,7 +3,8 @@ include('../db.php');
 session_start();
 
 if (!isset($_SESSION['revisor_id'])) {
-    die("Acceso no autorizado.");
+    header("Location: ../login/login_revisor.php");
+    exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {

@@ -22,7 +22,12 @@ $result_topicos = $conexion->query($query_topicos);
 <div class="container mt-5">
   <h2>Crear Nuevo Artículo</h2>
   <p>Llena los siguientes campos para enviar un nuevo artículo.</p>
-
+  <?php
+        include('../includes/flash.php');
+        mostrar_mensaje_sesion('error');
+        mostrar_mensaje_sesion('exito');
+        mostrar_mensaje_sesion('info');
+        ?>
   <form action="../controller/guardar_articulo.php" method="POST">
     <!-- Título -->
     <div class="form-group">
