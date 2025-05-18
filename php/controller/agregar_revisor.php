@@ -62,9 +62,6 @@ if (isset($_POST['btnappend'])){
         exit;
     }
 } else {
-    echo var_dump($_POST);
-    exit;
-
     $_SESSION['error'] = "Formulario no valido";
     header("Location: ../jefeRevisor/gestion_revisores.php");
     exit;

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 15-05-2025 a las 07:38:04
+-- Tiempo de generación: 17-05-2025 a las 20:21:55
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -124,7 +124,6 @@ INSERT INTO `especialidad_agregada` (`ID_REVISOR`, `ESPECIALIDAD_EXTRA`) VALUES
 (1, 'food'),
 (1, 'health'),
 (1, 'history'),
-(1, 'music'),
 (18, 'health'),
 (18, 'history'),
 (19, 'education'),
@@ -198,6 +197,21 @@ INSERT INTO `revisor` (`ID`, `RUT`, `NOMBRE`, `EMAIL`, `TOPICO_ESPECIALIDAD`, `C
 -- --------------------------------------------------------
 
 --
+-- Estructura Stand-in para la vista `revisoryespecialidad`
+-- (Véase abajo para la vista actual)
+--
+CREATE TABLE `revisoryespecialidad` (
+`id` int(11)
+,`nombre` varchar(50)
+,`rut` varchar(10)
+,`email` varchar(50)
+,`especialidadesRevisor` mediumtext
+,`esJefeComite` int(1)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `topicos_extra`
 --
 
@@ -245,6 +259,15 @@ INSERT INTO `topico_especialidad` (`NOMBRE`) VALUES
 ('sports'),
 ('technology'),
 ('travel');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura para la vista `revisoryespecialidad`
+--
+DROP TABLE IF EXISTS `revisoryespecialidad`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `revisoryespecialidad`  AS SELECT `revisor`.`ID` AS `id`, `revisor`.`NOMBRE` AS `nombre`, `revisor`.`RUT` AS `rut`, `revisor`.`EMAIL` AS `email`, group_concat(distinct coalesce(`e`.`ESPECIALIDAD_EXTRA`,`revisor`.`TOPICO_ESPECIALIDAD`) separator ', ') AS `especialidadesRevisor`, CASE WHEN `jc`.`RUT` is not null THEN 1 ELSE 0 END AS `esJefeComite` FROM ((`revisor` left join `especialidad_agregada` `e` on(`e`.`ID_REVISOR` = `revisor`.`ID`)) left join `jefe_comite` `jc` on(`revisor`.`RUT` = `jc`.`RUT`)) GROUP BY `revisor`.`ID`, `revisor`.`NOMBRE`, `revisor`.`RUT`, `revisor`.`EMAIL` ;
 
 --
 -- Índices para tablas volcadas
@@ -356,7 +379,7 @@ ALTER TABLE `revision`
 -- AUTO_INCREMENT de la tabla `revisor`
 --
 ALTER TABLE `revisor`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- Restricciones para tablas volcadas

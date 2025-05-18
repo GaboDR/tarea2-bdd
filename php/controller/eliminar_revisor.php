@@ -21,11 +21,6 @@ if (isset($_POST['btndelete'])){
 
         if ($resultQuery->num_rows == 0){
             if ($result->num_rows == 0){
-                $deleteQueryAgregada = "DELETE FROM especialidad_agregada WHERE ID_REVISOR = ?";
-                $deleteStmt = $conexion->prepare($deleteQueryAgregada);
-                $deleteStmt->bind_param("i", $id);
-                $deleteStmt->execute();
-        
                 $deleteQueryRevisor = "DELETE FROM revisor WHERE ID = ?";
                 $deleteRevisorStmt = $conexion->prepare($deleteQueryRevisor);
                 $deleteRevisorStmt->bind_param('i', $id);
