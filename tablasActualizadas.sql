@@ -503,3 +503,124 @@ END;
 //
 
 DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_guardar_revision (
+    IN p_articulo_revisor_id INT,
+    IN p_puntuacion_global INT,
+    IN p_comentarios TEXT,
+    IN p_originalidad INT,
+    IN p_claridad INT,
+    IN p_relevancia INT
+)
+BEGIN
+    INSERT INTO revision (
+        ARTICULO_REVISOR_ID,
+        puntuacion_global,
+        comentarios,
+        originalidad,
+        claridad,
+        relevancia
+    ) VALUES (
+        p_articulo_revisor_id,
+        p_puntuacion_global,
+        p_comentarios,
+        p_originalidad,
+        p_claridad,
+        p_relevancia
+    );
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE actualizar_revision (
+    IN p_id INT,
+    IN p_puntuacion_global INT,
+    IN p_comentarios TEXT,
+    IN p_originalidad INT,
+    IN p_claridad INT,
+    IN p_relevancia INT
+)
+BEGIN
+    DECLARE v_articulo_id INT;
+    DECLARE v_num_rev INT;
+
+    -- Manejo de errores: si no se encuentra algún valor
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    BEGIN
+        -- Silencio o manejo de errores personalizados (opcional)
+    END;
+
+    -- Actualizar revisión
+    UPDATE revision
+    SET
+        puntuacion_global = p_puntuacion_global,
+        comentarios = p_comentarios,
+        originalidad = p_originalidad,
+        claridad = p_claridad,
+        relevancia = p_relevancia
+    WHERE ID = p_id;
+
+    -- Obtener id del artículo relacionado
+    SELECT ar.id_articulo INTO v_articulo_id
+    FROM ARTICULO_REVISOR ar
+    JOIN REVISION r ON r.ARTICULO_REVISOR_ID = ar.id
+    WHERE r.id = p_id;
+
+    -- Obtener cantidad de revisiones
+    SELECT num_revisores INTO v_num_rev
+    FROM ARTICULO
+    WHERE id = v_articulo_id;
+
+    -- Recalcular promedio si ya hay 3 revisiones
+    IF v_num_rev = 3 THEN
+        CALL calcular_promedio(v_articulo_id);
+    END IF;
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_eliminar_revision (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM revision
+    WHERE ID = p_id;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE TRIGGER disminuir_num_revisores
+AFTER DELETE ON revision
+FOR EACH ROW
+BEGIN
+  DECLARE articulo_id INT;
+
+  -- Obtener el ID del artículo a partir de la relación articulo_revisor
+  SELECT ID_ARTICULO INTO articulo_id
+  FROM articulo_revisor
+  WHERE ID = OLD.ARTICULO_REVISOR_ID;
+
+  -- Disminuir el contador en la tabla articulo
+  UPDATE articulo
+  SET NUM_REVISORES = NUM_REVISORES - 1
+  WHERE ID = articulo_id;
+
+  -- Setear puntajeFinal a NULL al eliminar una revisión
+  UPDATE articulo
+  SET puntajeFinal = NULL
+  WHERE ID = articulo_id;
+END;
+//
+
+DELIMITER ;
