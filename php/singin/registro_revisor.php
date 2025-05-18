@@ -13,28 +13,13 @@ $result = mysqli_query($conexion, $query);
       <div class="card shadow-sm">
         <div class="card-body">
           <h4 class="mb-4 text-center">Registro de Revisor</h4>
-          <?php if (isset($_GET['error'])): ?>
-    <div class="alert alert-danger" role="alert">
         <?php
-        switch ($_GET['error']) {
-            case 'campos_vacios':
-                echo 'Por favor, completa todos los campos.';
-                break;
-            case 'rut_existente':
-                echo 'Datos ya registrados.';
-                break;
-            case 'sql_error':
-                echo 'Ocurrió un error al registrar. Intenta nuevamente.';
-                break;
-            case 'acesso_invalido':
-                echo 'Permiso de clave rechazado.';
-                break;
-            default:
-                echo 'Ocurrió un error desconocido.';
-        }
+        include('../includes/flash.php');
+        mostrar_mensaje_sesion('error');
+        mostrar_mensaje_sesion('exito');
+        mostrar_mensaje_sesion('info');
         ?>
     </div>
-<?php endif; ?>
           <form action="../controller/singin_revisor.php" method="POST">
             <div class="mb-3">
               <label for="nombre" class="form-label">Nombre completo</label>

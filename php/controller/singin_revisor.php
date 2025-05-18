@@ -1,5 +1,6 @@
 <?php
 include('../db.php'); 
+session_start();
 
 if (empty($_POST['nombre']) || empty($_POST['rut']) || empty($_POST['email']) || empty($_POST['contrasena']) || empty($_POST['topicos'])) {
     header("Location: ../singin/registro_revisor.php?error=campos_vacios");
@@ -31,14 +32,18 @@ try {
         $intermedia_stmt->execute();
     }
 
-    header("Location: ../sesiones.php");
+    header("Location: ../revisor/perfil.php");
     exit;
 } catch (mysqli_sql_exception $e) {
     if (str_contains($e->getMessage(), 'Duplicate entry')) {
-        header("Location: ../signin/registro_revisor.php?error=rut_existente");
+        $_SESSION['error'] = "Datos ya existentes.";
+
+        header("Location: ../singin/registro_revisor.php");
     } else {
         error_log("Error SQL: " . $e->getMessage()); 
-        header("Location: ../signin/registro_revisor.php?error=sql_error");
+        $_SESSION['error'] = "Datos invalidos";
+
+        header("Location: ../singin/registro_revisor.php");
     }
     exit;
 }

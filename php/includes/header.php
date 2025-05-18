@@ -33,12 +33,15 @@ session_start();
           
           <?php if (isset($_SESSION['autor_id'])): ?>
             <!-- Opciones para AUTOR -->
+            <li class="nav-item"><a class="nav-link" href="/tarea2/php/autor/perfil.php">Mi Perfil</a></li>
             <li class="nav-item"><a class="nav-link" href="/tarea2/php/autor/ver_art.php">Mis artículos</a></li>
             <li class="nav-item"><a class="nav-link" href="/tarea2/php/autor/crear_articulo.php">Subir artículo</a></li>
             <li class="nav-item"><a class="nav-link text-danger" href="/tarea2/php/logout.php">Cerrar sesión</a></li>
           
           <?php elseif (isset($_SESSION['revisor_id'])): ?>
             <!-- Opciones para REVISOR -->
+            <li class="nav-item"><a class="nav-link" href="/tarea2/php/revisor/perfil.php">Mi Perfil</a></li>
+
             <li class="nav-item"><a class="nav-link" href="dashboard_revisor.php">Artículos a revisar</a></li>
             <li class="nav-item"><a class="nav-link" href="historial_revisiones.php">Historial de revisiones</a></li>
             <li class="nav-item"><a class="nav-link text-danger" href="/tarea2/php/logout.php">Cerrar sesión</a></li>

@@ -1,5 +1,6 @@
 <?php
 include('../db.php'); 
+session_start();
 
 $clave_accesso = 250504;
 
@@ -18,10 +19,12 @@ $topicos = $_POST['topicos'];
 $topico1 = $topicos[0];
 
 if ($clave != $clave_accesso) {
-    header("Location: ../singin/registro_jefe.php?error=acceso_invalido");
+    $_SESSION['error'] = 'Acceso invalido';
+    header("Location: ../singin/registro_jefe.php");
     exit;
 } elseif (!is_array($topicos) || count($topicos) == 0){
-    header("Location: ../singin/registro_jefe.php?error=sin_topicos");
+    $_SESSION['error'] = 'Topicos no seleccionados';
+    header("Location: ../singin/registro_jefe.php");
     exit;
 }
 
@@ -50,9 +53,11 @@ try {
     exit;
 } catch (mysqli_sql_exception $e) {
     if (str_contains($e->getMessage(), 'Duplicate entry')) {
-        header("Location: ../singin/registro_jefe.php?error=rut_existente");
+        $_SESSION['error'] = 'Datos existentes';
+        header("Location: ../singin/registro_jefe.php");
     } else {
-        header("Location: ../singin/registro_jefe.php?error=sql_error");
+        $_SESSION['error'] = 'Datos invalidos';
+        header("Location: ../singin/registro_jefe.php");
     }
     exit;
 }

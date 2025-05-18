@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['autor_id'])) {
 
         // Cerrar sesión y redirigir
         session_destroy();
-        header("Location: ../index.php?mensaje=perfil_eliminado");
+        header("Location: ../sesiones.php");
         exit;
 
     } catch (mysqli_sql_exception $e) {

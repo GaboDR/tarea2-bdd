@@ -24,6 +24,7 @@ if ($resultado->num_rows === 1) {
 
 <div class="container mt-5">
   <h2>Perfil del Autor</h2>
+  
   <p><strong>Nombre:</strong> <?= htmlspecialchars($autor['nombre']) ?></p>
   <p><strong>Email:</strong> <?= htmlspecialchars($autor['email']) ?></p>
 

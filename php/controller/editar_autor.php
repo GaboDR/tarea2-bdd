@@ -3,7 +3,8 @@ include('../db.php');
 session_start();
 
 if (!isset($_POST['autor_id'])) {
-    header("Location: ../autor/perfil.php?error=datos_invalidos");
+    $_SESSION['error'] = 'Datos invalidos';
+    header("Location: ../autor/perfil.php");
     exit;
 }
 
@@ -26,12 +27,13 @@ try {
 
     // Actualizar datos en sesión si se cambió el nombre
     $_SESSION['autor_nombre'] = $nombre;
-
-    header("Location: ../autor/perfil.php?exito=perfil_actualizado");
+    $_SESSION['exito'] = 'perfil actualizado';
+    header("Location: ../autor/perfil.php");
     exit;
 
 } catch (mysqli_sql_exception $e) {
     error_log("Error al actualizar perfil: " . $e->getMessage());
-    header("Location: ../autor/perfil.php?error=sql_error");
+    $_SESSION['error'] = 'Datos invalidos';
+    header("Location: ../autor/perfil.php");
     exit;
 }

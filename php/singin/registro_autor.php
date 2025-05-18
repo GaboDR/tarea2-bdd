@@ -4,26 +4,12 @@ include('../db.php');
 
 <div class="container mt-5">
     <h2 class="text-center mb-4">Registro de Autor</h2>
-    <?php if (isset($_GET['error'])): ?>
-    <div class="alert alert-danger" role="alert">
-        <?php
-        switch ($_GET['error']) {
-            case 'campos_vacios':
-                echo 'Por favor, completa todos los campos.';
-                break;
-            case 'rut_existente':
-                echo 'Datos ya registrados.';
-                break;
-            case 'sql_error':
-                echo 'Ocurrió un error al registrar. Intenta nuevamente.';
-                break;
-            default:
-                echo 'Ocurrió un error desconocido.';
-        }
+    <?php
+        include('../includes/flash.php');
+        mostrar_mensaje_sesion('error');
+        mostrar_mensaje_sesion('exito');
+        mostrar_mensaje_sesion('info');
         ?>
-    </div>
-<?php endif; ?>
-
     <form action="../controller/singin_autor.php" method="POST" class="needs-validation" novalidate>
         <div class="mb-3">
             <label for="nombre" class="form-label">Nombre completo</label>

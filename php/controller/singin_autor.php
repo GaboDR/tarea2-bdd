@@ -1,5 +1,6 @@
 <?php
 include('../db.php'); 
+session_start();
 
 if (empty($_POST['nombre']) || empty($_POST['rut']) || empty($_POST['email']) || empty($_POST['contrasena'])) {
     header("Location: ../singin/registro_autor.php?error=campos_vacios");
@@ -18,14 +19,26 @@ try {
     $stmt->bind_param("ssss", $rut, $nombre, $email, $contrasena);
     $stmt->execute();
 
-    header("Location: ../sesiones.php");
+    // Obtener el ID insertado
+    $autor_id = $conexion->insert_id;
+
+    // Iniciar sesión y guardar datos
+    session_start();
+    $_SESSION['autor_id'] = $autor_id;
+    $_SESSION['autor_nombre'] = $nombre;
+
+    header("Location: ../autor/perfil.php");
     exit;
+
 } catch (mysqli_sql_exception $e) {
     if (str_contains($e->getMessage(), 'Duplicate entry')) {
-        header("Location: ../singin/registro_autor.php?error=rut_existente");
+        $_SESSION['error'] = "datos existentes";
+        header("Location: ../singin/registro_autor.php");
     } else {
-        header("Location: ../singin/registro_autor.php?error=sql_error");
+        $_SESSION['error'] = "Datos invalidos";
+        header("Location: ../singin/registro_autor.php");
     }
     exit;
 }
+
 ?>

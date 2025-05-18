@@ -8,31 +8,14 @@ $result = mysqli_query($conexion, $query);
 
 <div class="container mt-5">
     <h2 class="text-center mb-4">Registro de Jefe de Comite</h2>
-    <?php if (isset($_GET['error'])): ?>
-    <div class="alert alert-danger" role="alert">
-        <?php
-        switch ($_GET['error']) {
-            case 'campos_vacios':
-                echo 'Por favor, completa todos los campos.';
-                break;
-            case 'rut_existente':
-                echo 'Datos ya registrados.';
-                break;
-            case 'sql_error':
-                echo 'Ocurrió un error al registrar. Intenta nuevamente.';
-                break;
-            case 'acesso_invalido':
-                echo 'Permiso de clave rechazado.';
-                break;
-            case 'sin_topicos':
-                echo 'Debes seleccionar al menos un tópico de especialidad.';
-                break;
-            default:
-                echo 'Ocurrió un error desconocido.';
-        }
-        ?>
+
     </div>
-<?php endif; ?>
+    <?php
+        include('../includes/flash.php');
+        mostrar_mensaje_sesion('error');
+        mostrar_mensaje_sesion('exito');
+        mostrar_mensaje_sesion('info');
+        ?>
 
     <form action="../controller/singin_jefe.php" method="POST" class="needs-validation" novalidate>
         <div class="mb-3">
