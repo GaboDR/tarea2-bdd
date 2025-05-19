@@ -2,10 +2,17 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
+<<<<<<< HEAD
 -- Host: 127.0.0.1
 -- Generation Time: May 19, 2025 at 04:02 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
+=======
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 19-05-2025 a las 03:16:18
+-- Versión del servidor: 10.4.32-MariaDB
+-- Versión de PHP: 8.2.12
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -95,6 +102,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AsignarRevisoresAutomaticamente` (I
             SELECT TOPICO_EXTRA COLLATE utf8mb4_unicode_ci FROM Topicos_extra WHERE ID_ARTICULO = p_idArticulo
         )
     )
+<<<<<<< HEAD
 AND r.RUT COLLATE utf8mb4_unicode_ci NOT IN (
     SELECT a.RUT COLLATE utf8mb4_unicode_ci
     FROM Autor_participante ap
@@ -109,6 +117,14 @@ AND r.RUT COLLATE utf8mb4_unicode_ci NOT IN (
     WHERE art.ID = p_idArticulo
 );
 
+=======
+    AND r.RUT COLLATE utf8mb4_unicode_ci NOT IN (
+        SELECT a.RUT COLLATE utf8mb4_unicode_ci
+        FROM Autor_participante ap
+        JOIN Autor a ON ap.ID_AUTOR = a.ID
+        WHERE ap.ID_ARTICULO = p_idArticulo
+    );
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 
     -- Cursor para seleccionar hasta 3 revisores
     OPEN cur;
@@ -159,19 +175,31 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_guardar_revision` (IN `p_articul
 END$$
 
 --
+<<<<<<< HEAD
 -- Functions
+=======
+-- Funciones
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 CREATE DEFINER=`root`@`localhost` FUNCTION `calcular_promedio_y_actualizar` (`articulo_id` INT) RETURNS DECIMAL(5,2) DETERMINISTIC BEGIN
     DECLARE promedio DECIMAL(5,2);
 
+<<<<<<< HEAD
     -- Calcular el promedio
+=======
+    -- Calcular el promedio de puntuaciones para el artículo
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
     SELECT AVG(r.puntuacion_global)
     INTO promedio
     FROM REVISION r
     INNER JOIN ARTICULO_REVISOR ar ON r.ARTICULO_REVISOR_ID = ar.id
     WHERE ar.id_articulo = articulo_id;
 
+<<<<<<< HEAD
     -- Actualizar el puntaje en ARTICULO
+=======
+    -- Actualizar el puntajeFinal del artículo
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
     UPDATE ARTICULO
     SET puntajeFinal = promedio
     WHERE id = articulo_id;
@@ -184,7 +212,11 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `articulo`
+=======
+-- Estructura de tabla para la tabla `articulo`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `articulo` (
@@ -199,6 +231,7 @@ CREATE TABLE `articulo` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `articulo`
 --
 
@@ -293,11 +326,25 @@ INSERT INTO `articulo` (`ID`, `TITULO`, `AUTOR_CONTACTO`, `TOPICO_PRINCIPAL`, `F
 (197, 'AI for Climate Monitoring', 5, 'science', '2025-05-18', 'Studies how artificial intelligence is used to track environmental changes.', 0, NULL),
 (198, 'Community Health Outreach Models', 5, 'health', '2025-05-18', 'Reviews effective health education programs in local communities.', 0, NULL),
 (199, 'The Role of Sports in Youth Development', 5, 'sports', '2025-05-18', 'Discusses how athletic programs contribute to education and social skills.', 0, NULL);
+=======
+-- Volcado de datos para la tabla `articulo`
+--
+
+INSERT INTO `articulo` (`ID`, `TITULO`, `AUTOR_CONTACTO`, `TOPICO_PRINCIPAL`, `FECHA_ENVIO`, `RESUMEN`, `NUM_REVISORES`, `puntajeFinal`) VALUES
+(8, 'Porfa funciona', 5, 'environment', '0000-00-00', 'hay pura fe', 3, NULL),
+(10, 'Hola', 8, 'culture', '0000-00-00', 'Prueba de correo enviado', 0, NULL),
+(11, 'Prueba2', 9, 'education', '0000-00-00', 'test', 0, NULL),
+(12, 'Chao', 9, 'education', '2025-05-18', 'Un resumen sin mas', 0, NULL);
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `articulo_revisor`
+=======
+-- Estructura de tabla para la tabla `articulo_revisor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `articulo_revisor` (
@@ -307,6 +354,7 @@ CREATE TABLE `articulo_revisor` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `articulo_revisor`
 --
 
@@ -321,11 +369,22 @@ INSERT INTO `articulo_revisor` (`ID`, `ID_ARTICULO`, `ID_REVISOR`) VALUES
 (107, 12, 18),
 (108, 12, 20),
 (106, 12, 26);
+=======
+-- Volcado de datos para la tabla `articulo_revisor`
+--
+
+INSERT INTO `articulo_revisor` (`ID`, `ID_ARTICULO`, `ID_REVISOR`) VALUES
+(60, 10, 26);
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `autor`
+=======
+-- Estructura de tabla para la tabla `autor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `autor` (
@@ -337,7 +396,11 @@ CREATE TABLE `autor` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `autor`
+=======
+-- Volcado de datos para la tabla `autor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 INSERT INTO `autor` (`ID`, `RUT`, `NOMBRE`, `EMAIL`, `CONTRASENA`) VALUES
@@ -349,7 +412,11 @@ INSERT INTO `autor` (`ID`, `RUT`, `NOMBRE`, `EMAIL`, `CONTRASENA`) VALUES
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `autor_participante`
+=======
+-- Estructura de tabla para la tabla `autor_participante`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `autor_participante` (
@@ -358,18 +425,30 @@ CREATE TABLE `autor_participante` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `autor_participante`
+=======
+-- Volcado de datos para la tabla `autor_participante`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 INSERT INTO `autor_participante` (`ID_ARTICULO`, `ID_AUTOR`) VALUES
 (8, 6),
+<<<<<<< HEAD
 (11, 8),
 (12, 9);
+=======
+(11, 8);
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `especialidad_agregada`
+=======
+-- Estructura de tabla para la tabla `especialidad_agregada`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `especialidad_agregada` (
@@ -378,7 +457,11 @@ CREATE TABLE `especialidad_agregada` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `especialidad_agregada`
+=======
+-- Volcado de datos para la tabla `especialidad_agregada`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 INSERT INTO `especialidad_agregada` (`ID_REVISOR`, `ESPECIALIDAD_EXTRA`) VALUES
@@ -392,6 +475,7 @@ INSERT INTO `especialidad_agregada` (`ID_REVISOR`, `ESPECIALIDAD_EXTRA`) VALUES
 (18, 'health'),
 (18, 'history'),
 (20, 'education'),
+<<<<<<< HEAD
 (26, 'education'),
 (26, 'environment'),
 (26, 'fashion'),
@@ -406,6 +490,10 @@ INSERT INTO `especialidad_agregada` (`ID_REVISOR`, `ESPECIALIDAD_EXTRA`) VALUES
 (26, 'sports'),
 (26, 'technology'),
 (26, 'travel'),
+=======
+(26, 'finance'),
+(26, 'history'),
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 (27, 'education'),
 (27, 'environment'),
 (27, 'politics');
@@ -413,7 +501,11 @@ INSERT INTO `especialidad_agregada` (`ID_REVISOR`, `ESPECIALIDAD_EXTRA`) VALUES
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `jefe_comite`
+=======
+-- Estructura de tabla para la tabla `jefe_comite`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `jefe_comite` (
@@ -421,7 +513,11 @@ CREATE TABLE `jefe_comite` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `jefe_comite`
+=======
+-- Volcado de datos para la tabla `jefe_comite`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 INSERT INTO `jefe_comite` (`RUT`) VALUES
@@ -432,7 +528,11 @@ INSERT INTO `jefe_comite` (`RUT`) VALUES
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `revision`
+=======
+-- Estructura de tabla para la tabla `revision`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `revision` (
@@ -446,6 +546,7 @@ CREATE TABLE `revision` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `revision`
 --
 
@@ -458,6 +559,9 @@ INSERT INTO `revision` (`ID`, `ARTICULO_REVISOR_ID`, `puntuacion_global`, `comen
 
 --
 -- Triggers `revision`
+=======
+-- Disparadores `revision`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 DELIMITER $$
 CREATE TRIGGER `aumentar_num_revisores` AFTER INSERT ON `revision` FOR EACH ROW BEGIN
@@ -501,23 +605,38 @@ DELIMITER $$
 CREATE TRIGGER `trigger_actualizar_promedio_cuando_3` AFTER INSERT ON `revision` FOR EACH ROW BEGIN
     DECLARE v_articulo_id INT;
     DECLARE total_revisiones INT;
+<<<<<<< HEAD
     DECLARE promedio DECIMAL(5,2);
 
     -- Obtener ID del artículo
+=======
+
+    -- Obtener el ID del artículo desde ARTICULO_REVISOR
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
     SELECT id_articulo INTO v_articulo_id
     FROM ARTICULO_REVISOR
     WHERE id = NEW.ARTICULO_REVISOR_ID;
 
+<<<<<<< HEAD
     -- Contar revisiones del artículo
+=======
+    -- Contar cuántas revisiones hay para ese artículo
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
     SELECT COUNT(*)
     INTO total_revisiones
     FROM REVISION r
     INNER JOIN ARTICULO_REVISOR ar ON r.ARTICULO_REVISOR_ID = ar.id
     WHERE ar.id_articulo = v_articulo_id;
 
+<<<<<<< HEAD
     -- Si hay 3 revisiones, calcular promedio
     IF total_revisiones = 3 THEN
         SET promedio = calcular_promedio_y_actualizar(v_articulo_id);
+=======
+    -- Si hay exactamente 3 revisiones, actualizar el puntaje final
+    IF total_revisiones = 3 THEN
+        CALL calcular_promedio_y_actualizar(v_articulo_id);
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
     END IF;
 END
 $$
@@ -526,7 +645,11 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `revisor`
+=======
+-- Estructura de tabla para la tabla `revisor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `revisor` (
@@ -539,7 +662,11 @@ CREATE TABLE `revisor` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `revisor`
+=======
+-- Volcado de datos para la tabla `revisor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 INSERT INTO `revisor` (`ID`, `RUT`, `NOMBRE`, `EMAIL`, `TOPICO_ESPECIALIDAD`, `CONTRASENA`) VALUES
@@ -552,8 +679,13 @@ INSERT INTO `revisor` (`ID`, `RUT`, `NOMBRE`, `EMAIL`, `TOPICO_ESPECIALIDAD`, `C
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Stand-in structure for view `revisoryespecialidad`
 -- (See below for the actual view)
+=======
+-- Estructura Stand-in para la vista `revisoryespecialidad`
+-- (Véase abajo para la vista actual)
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 CREATE TABLE `revisoryespecialidad` (
 `id` int(11)
@@ -567,7 +699,11 @@ CREATE TABLE `revisoryespecialidad` (
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `topicos_extra`
+=======
+-- Estructura de tabla para la tabla `topicos_extra`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `topicos_extra` (
@@ -576,13 +712,18 @@ CREATE TABLE `topicos_extra` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `topicos_extra`
+=======
+-- Volcado de datos para la tabla `topicos_extra`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 INSERT INTO `topicos_extra` (`ID_ARTICULO`, `TOPICO_EXTRA`) VALUES
 (8, 'history'),
 (8, 'science'),
 (10, 'science'),
+<<<<<<< HEAD
 (12, 'fashion'),
 (12, 'history'),
 (13, 'science'),
@@ -592,11 +733,18 @@ INSERT INTO `topicos_extra` (`ID_ARTICULO`, `TOPICO_EXTRA`) VALUES
 (14, 'finance'),
 (14, 'health'),
 (14, 'science');
+=======
+(12, 'food');
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `topico_especialidad`
+=======
+-- Estructura de tabla para la tabla `topico_especialidad`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 CREATE TABLE `topico_especialidad` (
@@ -604,7 +752,11 @@ CREATE TABLE `topico_especialidad` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+<<<<<<< HEAD
 -- Dumping data for table `topico_especialidad`
+=======
+-- Volcado de datos para la tabla `topico_especialidad`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 
 INSERT INTO `topico_especialidad` (`NOMBRE`) VALUES
@@ -627,8 +779,13 @@ INSERT INTO `topico_especialidad` (`NOMBRE`) VALUES
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Stand-in structure for view `vista_articulos_autores_revisores`
 -- (See below for the actual view)
+=======
+-- Estructura Stand-in para la vista `vista_articulos_autores_revisores`
+-- (Véase abajo para la vista actual)
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 CREATE TABLE `vista_articulos_autores_revisores` (
 `articulo_id` int(11)
@@ -641,8 +798,29 @@ CREATE TABLE `vista_articulos_autores_revisores` (
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Stand-in structure for view `vista_revisores_completa`
 -- (See below for the actual view)
+=======
+-- Estructura Stand-in para la vista `vista_filtros_busqueda`
+-- (Véase abajo para la vista actual)
+--
+CREATE TABLE `vista_filtros_busqueda` (
+`id_articulo` int(11)
+,`id_autores` mediumtext
+,`fecha_envio` date
+,`topicos` mediumtext
+,`id_revisores` mediumtext
+,`resumen` varchar(150)
+,`titulo` varchar(50)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura Stand-in para la vista `vista_revisores_completa`
+-- (Véase abajo para la vista actual)
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 CREATE TABLE `vista_revisores_completa` (
 `Revisor_ID` int(11)
@@ -656,7 +834,11 @@ CREATE TABLE `vista_revisores_completa` (
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Structure for view `revisoryespecialidad`
+=======
+-- Estructura para la vista `revisoryespecialidad`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 DROP TABLE IF EXISTS `revisoryespecialidad`;
 
@@ -665,7 +847,11 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Structure for view `vista_articulos_autores_revisores`
+=======
+-- Estructura para la vista `vista_articulos_autores_revisores`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 DROP TABLE IF EXISTS `vista_articulos_autores_revisores`;
 
@@ -674,18 +860,39 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Structure for view `vista_revisores_completa`
+=======
+-- Estructura para la vista `vista_filtros_busqueda`
+--
+DROP TABLE IF EXISTS `vista_filtros_busqueda`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vista_filtros_busqueda`  AS SELECT `a`.`ID` AS `id_articulo`, group_concat(distinct `ap`.`ID_AUTOR` order by `ap`.`ID_AUTOR` ASC separator ', ') AS `id_autores`, `a`.`FECHA_ENVIO` AS `fecha_envio`, concat_ws(', ',`a`.`TOPICO_PRINCIPAL`,group_concat(distinct `te`.`TOPICO_EXTRA` order by `te`.`TOPICO_EXTRA` ASC separator ', ')) AS `topicos`, group_concat(distinct `ar`.`ID_REVISOR` order by `ar`.`ID_REVISOR` ASC separator ', ') AS `id_revisores`, `a`.`RESUMEN` AS `resumen`, `a`.`TITULO` AS `titulo` FROM (((`articulo` `a` left join `autor_participante` `ap` on(`ap`.`ID_ARTICULO` = `a`.`ID`)) left join `topicos_extra` `te` on(`te`.`ID_ARTICULO` = `a`.`ID`)) left join `articulo_revisor` `ar` on(`ar`.`ID_ARTICULO` = `a`.`ID`)) GROUP BY `a`.`ID`, `a`.`FECHA_ENVIO`, `a`.`RESUMEN`, `a`.`TITULO`, `a`.`TOPICO_PRINCIPAL` ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura para la vista `vista_revisores_completa`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 DROP TABLE IF EXISTS `vista_revisores_completa`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vista_revisores_completa`  AS SELECT `r`.`ID` AS `Revisor_ID`, `r`.`NOMBRE` AS `Revisor_Nombre`, `r`.`RUT` AS `Revisor_Rut`, concat(`te`.`NOMBRE`,ifnull(concat(', ',(select group_concat(`ea`.`ESPECIALIDAD_EXTRA` separator ', ') from (`especialidad_agregada` `ea` join `topico_especialidad` `te_extra` on(`ea`.`ESPECIALIDAD_EXTRA` = `te_extra`.`NOMBRE`)) where `ea`.`ID_REVISOR` = `r`.`ID`)),'')) AS `Todas_Especialidades`, (select group_concat(`a`.`TITULO` separator '| ') from (`articulo_revisor` `ar` join `articulo` `a` on(`ar`.`ID_ARTICULO` = `a`.`ID`)) where `ar`.`ID_REVISOR` = `r`.`ID`) AS `Articulos_Asignados`, (select group_concat(`a`.`ID` separator '| ') from (`articulo_revisor` `ar` join `articulo` `a` on(`ar`.`ID_ARTICULO` = `a`.`ID`)) where `ar`.`ID_REVISOR` = `r`.`ID`) AS `id_Articulos_Asignados` FROM (`revisor` `r` left join `topico_especialidad` `te` on(`r`.`TOPICO_ESPECIALIDAD` = `te`.`NOMBRE`)) ;
 
 --
+<<<<<<< HEAD
 -- Indexes for dumped tables
 --
 
 --
 -- Indexes for table `articulo`
+=======
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `articulo`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `articulo`
   ADD PRIMARY KEY (`ID`),
@@ -694,7 +901,11 @@ ALTER TABLE `articulo`
   ADD KEY `FK_AUTOR_CONTACTO` (`AUTOR_CONTACTO`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `articulo_revisor`
+=======
+-- Indices de la tabla `articulo_revisor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `articulo_revisor`
   ADD PRIMARY KEY (`ID`),
@@ -702,7 +913,11 @@ ALTER TABLE `articulo_revisor`
   ADD KEY `FK_ID_REVISOR_TO_ARTICULO` (`ID_REVISOR`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `autor`
+=======
+-- Indices de la tabla `autor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `autor`
   ADD PRIMARY KEY (`ID`),
@@ -710,34 +925,54 @@ ALTER TABLE `autor`
   ADD UNIQUE KEY `EMAIL` (`EMAIL`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `autor_participante`
+=======
+-- Indices de la tabla `autor_participante`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `autor_participante`
   ADD PRIMARY KEY (`ID_ARTICULO`,`ID_AUTOR`),
   ADD KEY `FK_ID_AUTOR` (`ID_AUTOR`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `especialidad_agregada`
+=======
+-- Indices de la tabla `especialidad_agregada`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `especialidad_agregada`
   ADD PRIMARY KEY (`ID_REVISOR`,`ESPECIALIDAD_EXTRA`),
   ADD KEY `FK_ESPECIALIDAD_EXTRA` (`ESPECIALIDAD_EXTRA`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `jefe_comite`
+=======
+-- Indices de la tabla `jefe_comite`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `jefe_comite`
   ADD UNIQUE KEY `RUT` (`RUT`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `revision`
+=======
+-- Indices de la tabla `revision`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `revision`
   ADD PRIMARY KEY (`ID`),
   ADD KEY `FK_ArticuloRevisor_Revision` (`ARTICULO_REVISOR_ID`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `revisor`
+=======
+-- Indices de la tabla `revisor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `revisor`
   ADD PRIMARY KEY (`ID`),
@@ -746,19 +981,28 @@ ALTER TABLE `revisor`
   ADD KEY `TOPICO_ESPECIALIDAD` (`TOPICO_ESPECIALIDAD`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `topicos_extra`
+=======
+-- Indices de la tabla `topicos_extra`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `topicos_extra`
   ADD PRIMARY KEY (`ID_ARTICULO`,`TOPICO_EXTRA`),
   ADD KEY `FK_TOPICO_EXTRA` (`TOPICO_EXTRA`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `topico_especialidad`
+=======
+-- Indices de la tabla `topico_especialidad`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `topico_especialidad`
   ADD PRIMARY KEY (`NOMBRE`);
 
 --
+<<<<<<< HEAD
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -776,11 +1020,31 @@ ALTER TABLE `articulo_revisor`
 
 --
 -- AUTO_INCREMENT for table `autor`
+=======
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `articulo`
+--
+ALTER TABLE `articulo`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT de la tabla `articulo_revisor`
+--
+ALTER TABLE `articulo_revisor`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+
+--
+-- AUTO_INCREMENT de la tabla `autor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `autor`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
+<<<<<<< HEAD
 -- AUTO_INCREMENT for table `revision`
 --
 ALTER TABLE `revision`
@@ -788,62 +1052,107 @@ ALTER TABLE `revision`
 
 --
 -- AUTO_INCREMENT for table `revisor`
+=======
+-- AUTO_INCREMENT de la tabla `revision`
+--
+ALTER TABLE `revision`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `revisor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `revisor`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
+<<<<<<< HEAD
 -- Constraints for dumped tables
 --
 
 --
 -- Constraints for table `articulo`
+=======
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `articulo`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `articulo`
   ADD CONSTRAINT `FK_AUTOR_CONTACTO` FOREIGN KEY (`AUTOR_CONTACTO`) REFERENCES `autor` (`ID`),
   ADD CONSTRAINT `FK_TOPICO_PRINCIPAL` FOREIGN KEY (`TOPICO_PRINCIPAL`) REFERENCES `topico_especialidad` (`NOMBRE`);
 
 --
+<<<<<<< HEAD
 -- Constraints for table `articulo_revisor`
+=======
+-- Filtros para la tabla `articulo_revisor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `articulo_revisor`
   ADD CONSTRAINT `FK_ID_ARTICULO_TO_REVISOR` FOREIGN KEY (`ID_ARTICULO`) REFERENCES `articulo` (`ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `FK_ID_REVISOR_TO_ARTICULO` FOREIGN KEY (`ID_REVISOR`) REFERENCES `revisor` (`ID`) ON DELETE CASCADE;
 
 --
+<<<<<<< HEAD
 -- Constraints for table `autor_participante`
+=======
+-- Filtros para la tabla `autor_participante`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `autor_participante`
   ADD CONSTRAINT `FK_ID_ARTICULO` FOREIGN KEY (`ID_ARTICULO`) REFERENCES `articulo` (`ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `FK_ID_AUTOR` FOREIGN KEY (`ID_AUTOR`) REFERENCES `autor` (`ID`) ON DELETE CASCADE;
 
 --
+<<<<<<< HEAD
 -- Constraints for table `especialidad_agregada`
+=======
+-- Filtros para la tabla `especialidad_agregada`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `especialidad_agregada`
   ADD CONSTRAINT `FK_ESPECIALIDAD_EXTRA` FOREIGN KEY (`ESPECIALIDAD_EXTRA`) REFERENCES `topico_especialidad` (`NOMBRE`) ON DELETE CASCADE,
   ADD CONSTRAINT `FK_ID_REVISOR` FOREIGN KEY (`ID_REVISOR`) REFERENCES `revisor` (`ID`) ON DELETE CASCADE;
 
 --
+<<<<<<< HEAD
 -- Constraints for table `jefe_comite`
+=======
+-- Filtros para la tabla `jefe_comite`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `jefe_comite`
   ADD CONSTRAINT `FK_rut_jefe_revisor` FOREIGN KEY (`RUT`) REFERENCES `revisor` (`RUT`) ON DELETE CASCADE;
 
 --
+<<<<<<< HEAD
 -- Constraints for table `revision`
+=======
+-- Filtros para la tabla `revision`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `revision`
   ADD CONSTRAINT `FK_ArticuloRevisor_Revision` FOREIGN KEY (`ARTICULO_REVISOR_ID`) REFERENCES `articulo_revisor` (`ID`);
 
 --
+<<<<<<< HEAD
 -- Constraints for table `revisor`
+=======
+-- Filtros para la tabla `revisor`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `revisor`
   ADD CONSTRAINT `revisor_ibfk_1` FOREIGN KEY (`TOPICO_ESPECIALIDAD`) REFERENCES `topico_especialidad` (`NOMBRE`);
 
 --
+<<<<<<< HEAD
 -- Constraints for table `topicos_extra`
+=======
+-- Filtros para la tabla `topicos_extra`
+>>>>>>> 8bdcf67a399f9e53b6adf05139c83bfa905fa23c
 --
 ALTER TABLE `topicos_extra`
   ADD CONSTRAINT `FK_ID_ARTICULO_TO_TOPICO` FOREIGN KEY (`ID_ARTICULO`) REFERENCES `articulo` (`ID`) ON DELETE CASCADE,
