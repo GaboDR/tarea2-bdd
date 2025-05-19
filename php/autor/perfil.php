@@ -24,7 +24,12 @@ if ($resultado->num_rows === 1) {
 
 <div class="container mt-5">
   <h2>Perfil del Autor</h2>
-  
+  <?php
+        include('../includes/flash.php');
+        mostrar_mensaje_sesion('error');
+        mostrar_mensaje_sesion('exito');
+        mostrar_mensaje_sesion('info');
+        ?>
   <p><strong>Nombre:</strong> <?= htmlspecialchars($autor['nombre']) ?></p>
   <p><strong>Email:</strong> <?= htmlspecialchars($autor['email']) ?></p>
 

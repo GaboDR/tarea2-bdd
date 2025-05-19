@@ -7,7 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['autor_id'])) {
 
     // Prevenir borrado accidental de otro autor
     if ($autor_id != $_SESSION['autor_id']) {
-        header("Location: ../autor/perfil_autor.php?error=no_autorizado");
+        $_SESSION['error'] = 'Acceso no autorizado';
+        header("Location: ../autor/perfil.php");
         exit;
     }
 
@@ -22,12 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['autor_id'])) {
         exit;
 
     } catch (mysqli_sql_exception $e) {
-        error_log("Error al eliminar perfil: " . $e->getMessage());
-        header("Location: ../autor/perfil_autor.php?error=sql_error");
+        $_SESSION['error'] = "No puedes eliminar este perfil";
+        header("Location: ../autor/perfil.php");
         exit;
     }
 } else {
-    header("Location: ../autor/perfil_autor.php?error=peticion_invalida");
+    $_SESSION['error'] = "Peticion invalida";
+    header("Location: ../autor/perfil.php");
     exit;
 }
 ?>
