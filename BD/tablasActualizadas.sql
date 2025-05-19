@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 19, 2025 at 04:35 AM
+-- Generation Time: May 19, 2025 at 05:12 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -28,6 +28,7 @@ DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `actualizar_revision` (IN `p_id` INT, IN `p_puntuacion_global` INT, IN `p_comentarios` TEXT, IN `p_originalidad` INT, IN `p_claridad` INT, IN `p_relevancia` INT)   BEGIN
     DECLARE v_articulo_id INT;
     DECLARE v_num_rev INT;
+    DECLARE v_promedio DECIMAL(10,2); -- ajusta el tipo según el retorno de la función
 
     -- Manejo de errores: si no se encuentra algún valor
     DECLARE CONTINUE HANDLER FOR NOT FOUND
@@ -58,7 +59,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `actualizar_revision` (IN `p_id` INT
 
     -- Recalcular promedio si ya hay 3 revisiones
     IF v_num_rev = 3 THEN
-        CALL calcular_promedio(v_articulo_id);
+        SET v_promedio = calcular_promedio(v_articulo_id);
+        UPDATE ARTICULO
+        SET promedio = v_promedio
+        WHERE id = v_articulo_id;
     END IF;
 END$$
 
@@ -362,7 +366,8 @@ CREATE TABLE `autor_participante` (
 
 INSERT INTO `autor_participante` (`ID_ARTICULO`, `ID_AUTOR`) VALUES
 (11, 8),
-(12, 9);
+(12, 9),
+(13, 11);
 
 -- --------------------------------------------------------
 
@@ -582,9 +587,6 @@ INSERT INTO `topicos_extra` (`ID_ARTICULO`, `TOPICO_EXTRA`) VALUES
 (10, 'science'),
 (12, 'fashion'),
 (12, 'history'),
-(13, 'science'),
-(13, 'sports'),
-(13, 'travel'),
 (14, 'environment'),
 (14, 'finance'),
 (14, 'health'),

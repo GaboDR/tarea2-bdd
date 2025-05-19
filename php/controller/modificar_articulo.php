@@ -71,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } catch (Exception $e) {
         $conexion->rollback();
 
-        $_SESSION['error'] = $e->getMessage();
+        $_SESSION['error'] = "Inputs invalidos/vacios";
         header("Location: ../autor/ver_art.php");
         exit;
     }
