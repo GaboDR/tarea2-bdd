@@ -838,3 +838,22 @@ DELIMITER ;
 
 ALTER TABLE articulo 
 MODIFY FECHA_ENVIO DATE NOT NULL DEFAULT CURRENT_DATE;
+
+
+
+-- --------------------------------------------------------
+
+--
+-- Estructura Stand-in para la vista `revisoryespecialidad`
+-- (Véase abajo para la vista actual)
+--
+CREATE TABLE `revisoryespecialidad` (
+`id` int(11)
+,`nombre` varchar(50)
+,`rut` varchar(10)
+,`email` varchar(50)
+,`especialidadesRevisor` longtext
+,`esJefeComite` int(1)
+);
+
+-- --------------------------------------------------------
