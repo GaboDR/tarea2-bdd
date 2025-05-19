@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 19-05-2025 a las 01:28:41
+-- Tiempo de generación: 19-05-2025 a las 03:16:18
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -25,6 +25,43 @@ DELIMITER $$
 --
 -- Procedimientos
 --
+CREATE DEFINER=`root`@`localhost` PROCEDURE `actualizar_revision` (IN `p_id` INT, IN `p_puntuacion_global` INT, IN `p_comentarios` TEXT, IN `p_originalidad` INT, IN `p_claridad` INT, IN `p_relevancia` INT)   BEGIN
+    DECLARE v_articulo_id INT;
+    DECLARE v_num_rev INT;
+
+    -- Manejo de errores: si no se encuentra algún valor
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    BEGIN
+        -- Silencio o manejo de errores personalizados (opcional)
+    END;
+
+    -- Actualizar revisión
+    UPDATE revision
+    SET
+        puntuacion_global = p_puntuacion_global,
+        comentarios = p_comentarios,
+        originalidad = p_originalidad,
+        claridad = p_claridad,
+        relevancia = p_relevancia
+    WHERE ID = p_id;
+
+    -- Obtener id del artículo relacionado
+    SELECT ar.id_articulo INTO v_articulo_id
+    FROM ARTICULO_REVISOR ar
+    JOIN REVISION r ON r.ARTICULO_REVISOR_ID = ar.id
+    WHERE r.id = p_id;
+
+    -- Obtener cantidad de revisiones
+    SELECT num_revisores INTO v_num_rev
+    FROM ARTICULO
+    WHERE id = v_articulo_id;
+
+    -- Recalcular promedio si ya hay 3 revisiones
+    IF v_num_rev = 3 THEN
+        CALL calcular_promedio(v_articulo_id);
+    END IF;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `AsignarRevisoresAutomaticamente` (IN `p_idArticulo` INT)   BEGIN
     DECLARE done INT DEFAULT FALSE;
     DECLARE v_rutRevisor VARCHAR(12) COLLATE utf8mb4_unicode_ci;
@@ -90,6 +127,29 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `AsignarRevisoresAutomaticamente` (I
     DROP TEMPORARY TABLE IF EXISTS RevisoresCandidatos;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_eliminar_revision` (IN `p_id` INT)   BEGIN
+    DELETE FROM revision
+    WHERE ID = p_id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_guardar_revision` (IN `p_articulo_revisor_id` INT, IN `p_puntuacion_global` INT, IN `p_comentarios` TEXT, IN `p_originalidad` INT, IN `p_claridad` INT, IN `p_relevancia` INT)   BEGIN
+    INSERT INTO revision (
+        ARTICULO_REVISOR_ID,
+        puntuacion_global,
+        comentarios,
+        originalidad,
+        claridad,
+        relevancia
+    ) VALUES (
+        p_articulo_revisor_id,
+        p_puntuacion_global,
+        p_comentarios,
+        p_originalidad,
+        p_claridad,
+        p_relevancia
+    );
+END$$
+
 --
 -- Funciones
 --
@@ -124,7 +184,7 @@ CREATE TABLE `articulo` (
   `TITULO` varchar(50) NOT NULL,
   `AUTOR_CONTACTO` int(11) NOT NULL,
   `TOPICO_PRINCIPAL` varchar(50) NOT NULL,
-  `FECHA_ENVIO` date NOT NULL,
+  `FECHA_ENVIO` date NOT NULL DEFAULT curdate(),
   `RESUMEN` varchar(150) NOT NULL,
   `NUM_REVISORES` int(11) DEFAULT 0,
   `puntajeFinal` float DEFAULT NULL
@@ -137,7 +197,8 @@ CREATE TABLE `articulo` (
 INSERT INTO `articulo` (`ID`, `TITULO`, `AUTOR_CONTACTO`, `TOPICO_PRINCIPAL`, `FECHA_ENVIO`, `RESUMEN`, `NUM_REVISORES`, `puntajeFinal`) VALUES
 (8, 'Porfa funciona', 5, 'environment', '0000-00-00', 'hay pura fe', 3, NULL),
 (10, 'Hola', 8, 'culture', '0000-00-00', 'Prueba de correo enviado', 0, NULL),
-(11, 'Prueba2', 9, 'education', '0000-00-00', 'test', 0, NULL);
+(11, 'Prueba2', 9, 'education', '0000-00-00', 'test', 0, NULL),
+(12, 'Chao', 9, 'education', '2025-05-18', 'Un resumen sin mas', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -289,6 +350,27 @@ END
 $$
 DELIMITER ;
 DELIMITER $$
+CREATE TRIGGER `disminuir_num_revisores` AFTER DELETE ON `revision` FOR EACH ROW BEGIN
+  DECLARE articulo_id INT;
+
+  -- Obtener el ID del artículo a partir de la relación articulo_revisor
+  SELECT ID_ARTICULO INTO articulo_id
+  FROM articulo_revisor
+  WHERE ID = OLD.ARTICULO_REVISOR_ID;
+
+  -- Disminuir el contador en la tabla articulo
+  UPDATE articulo
+  SET NUM_REVISORES = NUM_REVISORES - 1
+  WHERE ID = articulo_id;
+
+  -- Setear puntajeFinal a NULL al eliminar una revisión
+  UPDATE articulo
+  SET puntajeFinal = NULL
+  WHERE ID = articulo_id;
+END
+$$
+DELIMITER ;
+DELIMITER $$
 CREATE TRIGGER `trigger_actualizar_promedio_cuando_3` AFTER INSERT ON `revision` FOR EACH ROW BEGIN
     DECLARE v_articulo_id INT;
     DECLARE total_revisiones INT;
@@ -372,7 +454,8 @@ CREATE TABLE `topicos_extra` (
 INSERT INTO `topicos_extra` (`ID_ARTICULO`, `TOPICO_EXTRA`) VALUES
 (8, 'history'),
 (8, 'science'),
-(10, 'science');
+(10, 'science'),
+(12, 'food');
 
 -- --------------------------------------------------------
 
@@ -422,6 +505,22 @@ CREATE TABLE `vista_articulos_autores_revisores` (
 -- --------------------------------------------------------
 
 --
+-- Estructura Stand-in para la vista `vista_filtros_busqueda`
+-- (Véase abajo para la vista actual)
+--
+CREATE TABLE `vista_filtros_busqueda` (
+`id_articulo` int(11)
+,`id_autores` mediumtext
+,`fecha_envio` date
+,`topicos` mediumtext
+,`id_revisores` mediumtext
+,`resumen` varchar(150)
+,`titulo` varchar(50)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura Stand-in para la vista `vista_revisores_completa`
 -- (Véase abajo para la vista actual)
 --
@@ -451,6 +550,15 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 DROP TABLE IF EXISTS `vista_articulos_autores_revisores`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vista_articulos_autores_revisores`  AS SELECT `a`.`ID` AS `articulo_id`, `a`.`TITULO` AS `titulo_articulo`, group_concat(distinct concat(`aut`.`Nombre`) separator ', ') AS `autores`, group_concat(distinct `topico`.`Nombre` separator ', ') AS `topicos`, group_concat(distinct concat(`r`.`NOMBRE`) separator ', ') AS `revisores` FROM (((((((((`articulo` `a` left join `autor` `autor_principal` on(`autor_principal`.`ID` = `a`.`AUTOR_CONTACTO`)) left join `autor_participante` `ap` on(`ap`.`ID_ARTICULO` = `a`.`ID`)) left join `autor` `aut_part` on(`ap`.`ID_AUTOR` = `aut_part`.`ID`)) left join (select `autor`.`ID` AS `ID`,`autor`.`NOMBRE` AS `Nombre`,`autor`.`EMAIL` AS `Email` from `autor`) `aut` on(`aut`.`ID` = `a`.`AUTOR_CONTACTO` or `aut`.`ID` in (select `autor_participante`.`ID_AUTOR` from `autor_participante` where `autor_participante`.`ID_ARTICULO` = `a`.`ID`))) left join (select distinct `topico_especialidad`.`NOMBRE` AS `Nombre` from `topico_especialidad`) `topico_principal` on(`topico_principal`.`Nombre` = `a`.`TOPICO_PRINCIPAL`)) left join `topicos_extra` `te` on(`te`.`ID_ARTICULO` = `a`.`ID`)) left join (select `topico_especialidad`.`NOMBRE` AS `Nombre` from `topico_especialidad` union select `topicos_extra`.`TOPICO_EXTRA` AS `Nombre` from `topicos_extra`) `topico` on(`topico`.`Nombre` = `a`.`TOPICO_PRINCIPAL` or `topico`.`Nombre` = `te`.`TOPICO_EXTRA`)) left join `articulo_revisor` `ar` on(`ar`.`ID_ARTICULO` = `a`.`ID`)) left join `revisor` `r` on(`r`.`ID` = `ar`.`ID_REVISOR`)) GROUP BY `a`.`ID`, `a`.`TITULO` ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura para la vista `vista_filtros_busqueda`
+--
+DROP TABLE IF EXISTS `vista_filtros_busqueda`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vista_filtros_busqueda`  AS SELECT `a`.`ID` AS `id_articulo`, group_concat(distinct `ap`.`ID_AUTOR` order by `ap`.`ID_AUTOR` ASC separator ', ') AS `id_autores`, `a`.`FECHA_ENVIO` AS `fecha_envio`, concat_ws(', ',`a`.`TOPICO_PRINCIPAL`,group_concat(distinct `te`.`TOPICO_EXTRA` order by `te`.`TOPICO_EXTRA` ASC separator ', ')) AS `topicos`, group_concat(distinct `ar`.`ID_REVISOR` order by `ar`.`ID_REVISOR` ASC separator ', ') AS `id_revisores`, `a`.`RESUMEN` AS `resumen`, `a`.`TITULO` AS `titulo` FROM (((`articulo` `a` left join `autor_participante` `ap` on(`ap`.`ID_ARTICULO` = `a`.`ID`)) left join `topicos_extra` `te` on(`te`.`ID_ARTICULO` = `a`.`ID`)) left join `articulo_revisor` `ar` on(`ar`.`ID_ARTICULO` = `a`.`ID`)) GROUP BY `a`.`ID`, `a`.`FECHA_ENVIO`, `a`.`RESUMEN`, `a`.`TITULO`, `a`.`TOPICO_PRINCIPAL` ;
 
 -- --------------------------------------------------------
 
@@ -547,7 +655,7 @@ ALTER TABLE `topico_especialidad`
 -- AUTO_INCREMENT de la tabla `articulo`
 --
 ALTER TABLE `articulo`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `articulo_revisor`
@@ -634,226 +742,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
---triggers y funtion
-
-DELIMITER //
-CREATE TRIGGER aumentar_num_revisores
-AFTER INSERT ON revision
-FOR EACH ROW
-BEGIN
-  DECLARE articulo_id INT;
-
-  -- Obtener el ID del artículo a partir del ID de la relación articulo_revisor
-  SELECT ID_ARTICULO INTO articulo_id
-  FROM articulo_revisor
-  WHERE ID = NEW.ARTICULO_REVISOR_ID;
-
-  -- Aumentar el contador en la tabla articulo
-  UPDATE articulo
-  SET NUM_REVISORES = NUM_REVISORES + 1
-  WHERE ID = articulo_id;
-END;
-//
-DELIMITER ;
-
-
-DELIMITER //
-
-CREATE FUNCTION calcular_promedio_y_actualizar(articulo_id INT) 
-RETURNS DECIMAL(5,2)
-DETERMINISTIC
-BEGIN
-    DECLARE promedio DECIMAL(5,2);
-
-    -- Calcular el promedio de puntuaciones para el artículo
-    SELECT AVG(r.puntuacion_global)
-    INTO promedio
-    FROM REVISION r
-    INNER JOIN ARTICULO_REVISOR ar ON r.ARTICULO_REVISOR_ID = ar.id
-    WHERE ar.id_articulo = articulo_id;
-
-    -- Actualizar el puntajeFinal del artículo
-    UPDATE ARTICULO
-    SET puntajeFinal = promedio
-    WHERE id = articulo_id;
-
-    RETURN promedio;
-END;
-//
-
-DELIMITER ;
-
-
-DELIMITER //
-
-CREATE TRIGGER trigger_actualizar_promedio_cuando_3
-AFTER INSERT ON REVISION
-FOR EACH ROW
-BEGIN
-    DECLARE v_articulo_id INT;
-    DECLARE total_revisiones INT;
-
-    -- Obtener el ID del artículo desde ARTICULO_REVISOR
-    SELECT id_articulo INTO v_articulo_id
-    FROM ARTICULO_REVISOR
-    WHERE id = NEW.ARTICULO_REVISOR_ID;
-
-    -- Contar cuántas revisiones hay para ese artículo
-    SELECT COUNT(*)
-    INTO total_revisiones
-    FROM REVISION r
-    INNER JOIN ARTICULO_REVISOR ar ON r.ARTICULO_REVISOR_ID = ar.id
-    WHERE ar.id_articulo = v_articulo_id;
-
-    -- Si hay exactamente 3 revisiones, actualizar el puntaje final
-    IF total_revisiones = 3 THEN
-        CALL calcular_promedio_y_actualizar(v_articulo_id);
-    END IF;
-END;
-//
-
-DELIMITER ;
-
-
-DELIMITER //
-
-CREATE PROCEDURE sp_guardar_revision (
-    IN p_articulo_revisor_id INT,
-    IN p_puntuacion_global INT,
-    IN p_comentarios TEXT,
-    IN p_originalidad INT,
-    IN p_claridad INT,
-    IN p_relevancia INT
-)
-BEGIN
-    INSERT INTO revision (
-        ARTICULO_REVISOR_ID,
-        puntuacion_global,
-        comentarios,
-        originalidad,
-        claridad,
-        relevancia
-    ) VALUES (
-        p_articulo_revisor_id,
-        p_puntuacion_global,
-        p_comentarios,
-        p_originalidad,
-        p_claridad,
-        p_relevancia
-    );
-END //
-
-DELIMITER ;
-
-
-DELIMITER //
-
-CREATE PROCEDURE actualizar_revision (
-    IN p_id INT,
-    IN p_puntuacion_global INT,
-    IN p_comentarios TEXT,
-    IN p_originalidad INT,
-    IN p_claridad INT,
-    IN p_relevancia INT
-)
-BEGIN
-    DECLARE v_articulo_id INT;
-    DECLARE v_num_rev INT;
-
-    -- Manejo de errores: si no se encuentra algún valor
-    DECLARE CONTINUE HANDLER FOR NOT FOUND
-    BEGIN
-        -- Silencio o manejo de errores personalizados (opcional)
-    END;
-
-    -- Actualizar revisión
-    UPDATE revision
-    SET
-        puntuacion_global = p_puntuacion_global,
-        comentarios = p_comentarios,
-        originalidad = p_originalidad,
-        claridad = p_claridad,
-        relevancia = p_relevancia
-    WHERE ID = p_id;
-
-    -- Obtener id del artículo relacionado
-    SELECT ar.id_articulo INTO v_articulo_id
-    FROM ARTICULO_REVISOR ar
-    JOIN REVISION r ON r.ARTICULO_REVISOR_ID = ar.id
-    WHERE r.id = p_id;
-
-    -- Obtener cantidad de revisiones
-    SELECT num_revisores INTO v_num_rev
-    FROM ARTICULO
-    WHERE id = v_articulo_id;
-
-    -- Recalcular promedio si ya hay 3 revisiones
-    IF v_num_rev = 3 THEN
-        CALL calcular_promedio(v_articulo_id);
-    END IF;
-END //
-
-DELIMITER ;
-
-
-DELIMITER //
-
-CREATE PROCEDURE sp_eliminar_revision (
-    IN p_id INT
-)
-BEGIN
-    DELETE FROM revision
-    WHERE ID = p_id;
-END //
-
-DELIMITER ;
-
-DELIMITER //
-
-CREATE TRIGGER disminuir_num_revisores
-AFTER DELETE ON revision
-FOR EACH ROW
-BEGIN
-  DECLARE articulo_id INT;
-
-  -- Obtener el ID del artículo a partir de la relación articulo_revisor
-  SELECT ID_ARTICULO INTO articulo_id
-  FROM articulo_revisor
-  WHERE ID = OLD.ARTICULO_REVISOR_ID;
-
-  -- Disminuir el contador en la tabla articulo
-  UPDATE articulo
-  SET NUM_REVISORES = NUM_REVISORES - 1
-  WHERE ID = articulo_id;
-
-  -- Setear puntajeFinal a NULL al eliminar una revisión
-  UPDATE articulo
-  SET puntajeFinal = NULL
-  WHERE ID = articulo_id;
-END;
-//
-
-DELIMITER ;
-
-ALTER TABLE articulo 
-MODIFY FECHA_ENVIO DATE NOT NULL DEFAULT CURRENT_DATE;
-
-
-
--- --------------------------------------------------------
-
---
--- Estructura Stand-in para la vista `revisoryespecialidad`
--- (Véase abajo para la vista actual)
---
-CREATE TABLE `revisoryespecialidad` (
-`id` int(11)
-,`nombre` varchar(50)
-,`rut` varchar(10)
-,`email` varchar(50)
-,`especialidadesRevisor` longtext
-,`esJefeComite` int(1)
-);
-
--- --------------------------------------------------------
